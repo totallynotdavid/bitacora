@@ -116,16 +116,15 @@ export async function createCard(db: Db, input: CreateCard, today: string): Prom
     later: input.list === "pendiente" && input.later,
     doneDate: input.list === "hecho" ? today : null,
   };
-  return db
+  const id = input.id ?? crypto.randomUUID();
+  const created = await db
     .insert(cards)
-    .values({
-      id: crypto.randomUUID(),
-      title: input.title,
-      ...placement,
-      position: endOfGroup(placement),
-    })
+    .values({ id, title: input.title, ...placement, position: endOfGroup(placement) })
+    .onConflictDoNothing()
     .returning()
     .get();
+  // A repeated create with the same id returns the card the first one made.
+  return created ?? (await getCard(db, id))!;
 }
 
 /**

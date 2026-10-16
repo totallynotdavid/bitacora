@@ -13,6 +13,8 @@ const checklist = z.array(z.object({ text: z.string().trim().min(1).max(200), do
 const doneDate = z.iso.date();
 
 export const createCardSchema = z.object({
+  /** Chosen by the client so a card can be shown and edited before the server answers. */
+  id: z.uuid().optional(),
   title,
   list: z.enum(LISTS),
   later: z.boolean().default(false),

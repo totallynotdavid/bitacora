@@ -50,6 +50,11 @@ api.post("/cards", zValidator("json", createCardSchema), async (c) => {
   return c.json(card, 201);
 });
 
+api.get("/cards/:id", async (c) => {
+  const card = await getCard(drizzle(c.env.DB), c.req.param("id"));
+  return card ? c.json(card) : c.json({ error: "not found" }, 404);
+});
+
 api.patch("/cards/:id", zValidator("json", updateCardSchema), async (c) => {
   const db = drizzle(c.env.DB);
   const card = await getCard(db, c.req.param("id"));
