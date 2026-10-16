@@ -8,20 +8,18 @@ import {
   type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useState } from "react";
 import type { Card } from "../shared/model";
-import type { Placement } from "./api";
-import { containerId, containerOf, inContainer, parseContainerId, type Container } from "./groups";
-
-function place(cards: Card[], id: string, target: Container, index: number): Card[] {
-  const moving = cards.find((card) => card.id === id)!;
-  const rest = cards.filter((card) => card.id !== id);
-  const peers = inContainer(rest, target);
-  peers.splice(index, 0, { ...moving, ...target });
-  const renumbered = new Map(peers.map((card, i) => [card.id, { ...card, position: i + 1 }]));
-  return [...rest.filter((card) => !renumbered.has(card.id)), ...renumbered.values()];
-}
+import {
+  HEADER_SUFFIX,
+  containerId,
+  containerOf,
+  inContainer,
+  parseContainerId,
+  placeCard,
+  type Container,
+} from "./groups";
 
 const keyboardCodes = { start: ["Space"], cancel: ["Escape"], end: ["Space", "Enter"] };
 
@@ -32,31 +30,25 @@ export const dragAnnouncements = {
   },
 };
 
+/** The pointer must move this far before a press becomes a drag, so a click still opens the card. */
+const DRAG_DISTANCE = 5;
+
 /**
- * Local drag state over the server's cards. A card dragged into Hecho from
- * another list can only land on today, because the server dates it today.
+ * Drag state over the cards on screen. While a card is lifted, a local copy of
+ * the cards shows where it would land. Dropping hands the final place to
+ * `move` and the local copy goes away in the same render.
  */
 export function useCardDrag(
   cards: Card[],
-  today: string,
-  commit: (id: string, placement: Placement, index: number) => Promise<void>,
+  move: (id: string, to: Container, beforeId: string | null) => void,
 ) {
   const [local, setLocal] = useState<Card[] | null>(null);
   const [origin, setOrigin] = useState<Card | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: DRAG_DISTANCE } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates, keyboardCodes }),
   );
-
-  const shown = local ?? cards;
-
-  function targetFor(overId: string, current: Card[]): Container | null {
-    const overCard = current.find((card) => card.id === overId);
-    const target = parseContainerId(overId) ?? (overCard ? containerOf(overCard) : null);
-    if (target?.list === "hecho" && origin?.list !== "hecho") return { ...target, doneDate: today };
-    return target;
-  }
 
   function onDragStart({ active }: DragStartEvent) {
     setOrigin(cards.find((card) => card.id === active.id) ?? null);
@@ -66,45 +58,34 @@ export function useCardDrag(
   function onDragOver({ active, over }: DragOverEvent) {
     if (!over || !local) return;
     const moving = local.find((card) => card.id === active.id);
-    const target = targetFor(String(over.id), local);
+    const overId = String(over.id);
+    const overCard = local.find((card) => card.id === overId);
+    const target = parseContainerId(overId) ?? (overCard ? containerOf(overCard) : null);
     if (!moving || !target || containerId(moving) === containerId(target)) return;
 
     const peers = inContainer(local, target);
-    const overIndex = peers.findIndex((card) => card.id === over.id);
+    const overIndex = peers.findIndex((card) => card.id === overId);
+    const lifted = active.rect.current.translated;
     const below =
-      overIndex >= 0 &&
-      active.rect.current.translated &&
-      active.rect.current.translated.top > over.rect.top + over.rect.height / 2;
-    const index = overIndex < 0 ? peers.length : overIndex + (below ? 1 : 0);
-    setLocal(place(local, moving.id, target, index));
+      overIndex >= 0 && lifted && lifted.top + lifted.height / 2 > over.rect.top + over.rect.height / 2;
+    // An open day's header is above its cards, so a card dropped there goes first.
+    const onOpenHeader = overId.endsWith(HEADER_SUFFIX) && over.data.current?.open === true;
+    const index = overIndex >= 0 ? overIndex + (below ? 1 : 0) : onOpenHeader ? 0 : peers.length;
+    setLocal(placeCard(local, moving.id, target, peers[index]?.id ?? null));
   }
 
-  async function onDragEnd({ active, over }: DragEndEvent) {
+  function onDragEnd({ active, over }: DragEndEvent) {
     const moving = local?.find((card) => card.id === active.id);
-    if (!over || !local || !moving || !origin) return cancel();
-
-    const peers = inContainer(local, moving);
-    const activeIndex = peers.findIndex((card) => card.id === moving.id);
-    const overIndex = peers.findIndex((card) => card.id === over.id);
-    const index = overIndex >= 0 ? overIndex : activeIndex;
-    const final = containerOf(moving);
-
-    const unchanged =
-      containerId(origin) === containerId(final) &&
-      inContainer(cards, origin).findIndex((card) => card.id === origin.id) === index;
-    if (unchanged) return cancel();
-
-    setLocal(place(local, moving.id, final, index));
-    const sameHecho = origin.list === "hecho" && final.list === "hecho";
-    await commit(
-      moving.id,
-      {
-        list: final.list,
-        later: final.later,
-        doneDate: sameHecho ? (final.doneDate ?? undefined) : undefined,
-      },
-      index,
-    );
+    if (over && local && moving && origin) {
+      const peers = inContainer(local, moving);
+      const from = peers.findIndex((card) => card.id === moving.id);
+      const overIndex = peers.findIndex((card) => card.id === over.id);
+      const to = overIndex >= 0 ? overIndex : from;
+      const unchanged =
+        containerId(origin) === containerId(moving) &&
+        inContainer(cards, origin).findIndex((card) => card.id === origin.id) === to;
+      if (!unchanged) move(moving.id, containerOf(moving), arrayMove(peers, from, to)[to + 1]?.id ?? null);
+    }
     cancel();
   }
 
@@ -114,7 +95,7 @@ export function useCardDrag(
   }
 
   return {
-    cards: shown,
+    cards: local ?? cards,
     dragging: origin,
     sensors,
     collisionDetection: closestCorners,

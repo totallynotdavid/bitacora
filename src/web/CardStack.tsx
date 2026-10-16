@@ -5,12 +5,7 @@ import { SortableCard } from "./CardView";
 import styles from "./CardStack.module.css";
 import { containerId, type Container } from "./groups";
 
-export function CardStack(props: {
-  container: Container;
-  cards: Card[];
-  dragging: boolean;
-  onOpen: (id: string) => void;
-}) {
+export function CardStack(props: { container: Container; cards: Card[]; dragging: boolean }) {
   const id = containerId(props.container);
   const { setNodeRef, isOver } = useDroppable({ id });
 
@@ -27,7 +22,7 @@ export function CardStack(props: {
         data-over={isOver && props.cards.length === 0}
       >
         {props.cards.map((card) => (
-          <SortableCard key={card.id} card={card} onOpen={props.onOpen} />
+          <SortableCard key={card.id} card={card} />
         ))}
       </div>
     </SortableContext>

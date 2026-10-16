@@ -1,22 +1,100 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { AlignLeft, Check, ListChecks } from "lucide-react";
-import type { CSSProperties } from "react";
-import { CATEGORY_COLORS, type Card } from "../shared/model";
+import { AlignLeft, Check, ListChecks, Pencil } from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
+import { CATEGORY_COLORS, CATEGORY_TEXT, type Card } from "../shared/model";
 import styles from "./CardView.module.css";
+import { useUi } from "./ui";
+import { useLabels } from "./useLabels";
 
-export function CardFace({ card }: { card: Card }) {
+/**
+ * The card's completion control: a circle that shows on hover, or the green
+ * check of a card in Hecho. Without `onToggle` it is only a picture.
+ */
+export function Completion({
+  done,
+  size,
+  onToggle,
+}: {
+  done: boolean;
+  size: "card" | "back";
+  onToggle?: () => void;
+}) {
+  const icon = done ? <Check size={size === "card" ? 16 : 24} strokeWidth={3} aria-hidden /> : null;
+  if (!onToggle) {
+    return done ? (
+      <span className={styles.complete} data-done data-size={size}>
+        {icon}
+      </span>
+    ) : null;
+  }
+  return (
+    <button
+      type="button"
+      className={styles.complete}
+      data-done={done}
+      data-size={size}
+      aria-label={done ? "Mover a En curso" : "Marcar como hecha"}
+      onPointerDown={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        onToggle();
+      }}
+    >
+      {icon}
+    </button>
+  );
+}
+
+/**
+ * The card as it looks on the board. `title` replaces the title text, for quick
+ * edit. `onToggleDone` adds the completion circle.
+ */
+export function CardFace({
+  card,
+  title,
+  lifted,
+  onToggleDone,
+}: {
+  card: Card;
+  title?: ReactNode;
+  lifted?: boolean;
+  onToggleDone?: () => void;
+}) {
+  const labels = useLabels();
   const checked = card.checklist.filter((item) => item.done).length;
   const hasBadges = card.requester || card.checklist.length > 0 || card.description;
+  const done = card.list === "hecho";
 
   return (
-    <div className={styles.face} style={{ "--stripe": CATEGORY_COLORS[card.category] } as CSSProperties}>
-      <span className={styles.stripe} title={card.category} />
-      <div className={styles.title}>
-        {card.list === "hecho" && (
-          <Check className={styles.check} size={16} strokeWidth={3} aria-label="Hecho" />
-        )}
-        {card.title}
+    <div
+      className={styles.face}
+      data-lifted={lifted}
+      style={
+        {
+          "--stripe": CATEGORY_COLORS[card.category],
+          "--stripe-text": CATEGORY_TEXT[card.category],
+        } as CSSProperties
+      }
+    >
+      <button
+        type="button"
+        className={labels.expanded ? styles.pill : styles.stripe}
+        title={card.category}
+        aria-label={`Categoría ${card.category}. Alternar nombre de las etiquetas`}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          labels.toggle();
+        }}
+        onKeyDown={(event) => event.stopPropagation()}
+      >
+        {labels.expanded ? card.category : null}
+      </button>
+      <div className={styles.titleRow} data-done={done}>
+        <Completion done={done} size="card" onToggle={onToggleDone} />
+        <div className={styles.title}>{title ?? card.title}</div>
       </div>
       {hasBadges && (
         <div className={styles.badges}>
@@ -34,7 +112,8 @@ export function CardFace({ card }: { card: Card }) {
   );
 }
 
-export function SortableCard({ card, onOpen }: { card: Card; onOpen: (id: string) => void }) {
+export function SortableCard({ card }: { card: Card }) {
+  const ui = useUi();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
   });
@@ -43,17 +122,36 @@ export function SortableCard({ card, onOpen }: { card: Card; onOpen: (id: string
     <div
       ref={setNodeRef}
       className={styles.sortable}
+      data-card-id={card.id}
       data-dragging={isDragging}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       {...attributes}
+      role="group"
+      aria-label={card.title}
       {...listeners}
-      onClick={() => onOpen(card.id)}
+      onClick={() => ui.openCard(card.id)}
       onKeyDown={(event) => {
-        if (event.key === "Enter" && !isDragging) onOpen(card.id);
-        else listeners?.onKeyDown?.(event);
+        if (event.key === "Enter" && !isDragging && event.target === event.currentTarget) {
+          // The card back focuses its close button. The key press must not reach it.
+          event.preventDefault();
+          ui.openCard(card.id);
+        } else listeners?.onKeyDown?.(event);
       }}
     >
-      <CardFace card={card} />
+      <CardFace card={card} onToggleDone={() => ui.toggleDone(card.id)} />
+      <button
+        type="button"
+        className={styles.edit}
+        aria-label="Editar tarjeta"
+        onPointerDown={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          ui.quickEdit(card.id);
+        }}
+      >
+        <Pencil size={14} aria-hidden />
+      </button>
     </div>
   );
 }

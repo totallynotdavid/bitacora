@@ -16,7 +16,22 @@
   --surface: #fff;
   --hover: rgb(9 30 66 / 0.08);
   --border: rgb(9 30 66 / 0.14);
-  --focus: #1868db;
+  --focus: #388bff;
+  --button: rgb(9 30 66 / 0.06);
+  --button-hover: rgb(9 30 66 / 0.14);
+  --subtle-hover: #0515240f;
+  --subtle-pressed: #0b120e24;
+  --neutral-hover: #091e4224;
+  --neutral-pressed: #091e424f;
+  --outline: rgb(11 18 14 / 0.14);
+  --primary-hover: #1558bc;
+  --scrim: rgb(0 0 0 / 0.75);
+  --dim: rgb(0 0 0 / 0.6);
+  --placeholder: #091e420f;
+
+  --motion-fast: 85ms;
+  --motion: 120ms;
+  --motion-slow: 150ms;
 
   --shadow: 0 1px 1px rgb(30 31 33 / 0.25), 0 0 1px rgb(30 31 33 / 0.31);
   --shadow-raised: 0 8px 12px rgb(30 31 33 / 0.15), 0 0 1px rgb(30 31 33 / 0.31);
@@ -24,6 +39,7 @@
   --radius-card: 8px;
   --radius-list: 12px;
   --radius-chip: 4px;
+  --radius-button: 6px;
 
   --space-1: 4px;
   --space-2: 8px;

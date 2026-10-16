@@ -30,7 +30,21 @@ button {
   cursor: pointer;
 }
 
+html[data-dragging="true"],
+html[data-dragging="true"] * {
+  cursor: grabbing !important;
+}
+
 :focus-visible {
   outline: 2px solid var(--focus);
-  outline-offset: 1px;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

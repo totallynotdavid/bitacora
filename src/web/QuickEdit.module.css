@@ -1,0 +1,71 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: var(--dim);
+  animation: fade var(--motion-fast) ease-out;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.card {
+  position: absolute;
+}
+
+.field {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+}
+
+.save {
+  height: 32px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: var(--link);
+  color: #fff;
+  font-weight: 500;
+  transition: background-color var(--motion-fast) ease-out;
+}
+
+.save:hover {
+  background: var(--primary-hover);
+}
+
+.menu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: fade var(--motion) ease-out;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  height: 32px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: rgb(240 241 242);
+  color: var(--text);
+  font-weight: 500;
+  transition: background-color var(--motion-fast) ease-out;
+}
+
+.action:hover {
+  background: rgb(221 222 225);
+}

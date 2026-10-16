@@ -11,6 +11,7 @@
   font-weight: 500;
   color: var(--text-subtle);
   text-align: left;
+  transition: background-color var(--motion-fast) ease-out;
 }
 
 .button:hover {
@@ -21,6 +22,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  padding: var(--space-1);
 }
 
 .input {
@@ -33,12 +35,6 @@
   resize: none;
 }
 
-.horizon {
-  display: flex;
-  gap: var(--space-3);
-  color: var(--text-subtle);
-}
-
 .actions {
   display: flex;
   align-items: center;
@@ -47,16 +43,17 @@
 
 .submit {
   height: 32px;
-  padding: 0 12px;
+  padding: 6px 12px;
   border: 0;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-button);
   background: var(--link);
   color: #fff;
   font-weight: 500;
+  transition: background-color var(--motion-fast) ease-out;
 }
 
 .submit:hover {
-  background: #1558bc;
+  background: var(--primary-hover);
 }
 
 .cancel {
@@ -65,11 +62,16 @@
   width: 32px;
   height: 32px;
   border: 0;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-button);
   background: transparent;
   color: var(--text-subtle);
+  transition: background-color var(--motion-fast) ease-out;
 }
 
 .cancel:hover {
-  background: var(--hover);
+  background: var(--subtle-hover);
+}
+
+.cancel:active {
+  background: var(--subtle-pressed);
 }

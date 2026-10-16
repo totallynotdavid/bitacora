@@ -24,7 +24,35 @@
 
 .tools {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
+}
+
+.matches {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 12px;
+  border-radius: var(--radius-card);
+  background: var(--button);
+  color: var(--heading);
+  font-weight: 500;
+}
+
+.clear {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: transparent;
+  color: inherit;
+  transition: background var(--motion-fast) ease-out;
+}
+
+.clear:hover {
+  background: var(--button-hover);
 }
 
 .tool {
@@ -40,7 +68,12 @@
   color: var(--heading);
 }
 
-.tool:hover {
+.tool {
+  transition: background var(--motion-fast) ease-out;
+}
+
+.tool:hover,
+.tool[data-active="true"] {
   background: var(--hover);
 }
 

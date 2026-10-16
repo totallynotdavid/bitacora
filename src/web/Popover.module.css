@@ -1,0 +1,59 @@
+.popover {
+  position: fixed;
+  z-index: 30;
+  width: 304px;
+  max-width: calc(100vw - 16px);
+  padding: 0 12px 12px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-raised);
+  animation: pop var(--motion-fast) ease-out;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-subtle);
+}
+
+.close {
+  position: absolute;
+  top: 4px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: transparent;
+  color: var(--text-subtle);
+  transition: background-color var(--motion-fast) ease-out;
+}
+
+.close:hover {
+  background: var(--subtle-hover);
+}
+
+.close:active {
+  background: var(--subtle-pressed);
+}

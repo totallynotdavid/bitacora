@@ -11,9 +11,16 @@ export const CATEGORIES = ["Desarrollo", "Cursos", "Otros"] as const;
 export type Category = (typeof CATEGORIES)[number];
 
 export const CATEGORY_COLORS: Record<Category, string> = {
-  Desarrollo: "#1f845a",
-  Cursos: "#6e5dc6",
-  Otros: "#cf9f02",
+  Desarrollo: "rgb(75 206 151)",
+  Cursos: "rgb(201 124 244)",
+  Otros: "rgb(252 167 0)",
+};
+
+/** The text color that reads on the category's color. */
+export const CATEGORY_TEXT: Record<Category, string> = {
+  Desarrollo: "rgb(22 75 53)",
+  Cursos: "rgb(72 36 93)",
+  Otros: "rgb(105 50 0)",
 };
 
 export type ChecklistItem = { text: string; done: boolean };

@@ -1,0 +1,60 @@
+.stack {
+  position: fixed;
+  z-index: 40;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: calc(100vw - 32px);
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 8px 8px 16px;
+  border-radius: var(--radius-card);
+  background: rgb(23 43 77);
+  color: #fff;
+  box-shadow: var(--shadow-raised);
+  animation: slide-in var(--motion-slow) ease-out;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.action {
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  font-weight: 600;
+  color: rgb(133 184 255);
+  text-decoration: underline;
+}
+
+.action:hover {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: #fff;
+}
+
+.close:hover {
+  background: rgb(255 255 255 / 0.14);
+}

@@ -1,0 +1,32 @@
+.note {
+  margin: 0 0 12px;
+  color: var(--text-subtle);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.table th {
+  width: 72px;
+}
+
+.key {
+  display: inline-block;
+  min-width: 28px;
+  padding: 0 8px;
+  border-radius: var(--radius-chip);
+  background: var(--button);
+  font: inherit;
+  font-weight: 600;
+  text-align: center;
+}

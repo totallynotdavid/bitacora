@@ -16,11 +16,15 @@ export function useOpenDays(today: string) {
 
   const isOpen = (date: string) => stored[date] ?? date === today;
 
-  function toggle(date: string) {
-    const next = { ...stored, [date]: !isOpen(date) };
+  function set(date: string, open: boolean) {
+    const next = { ...stored, [date]: open };
     localStorage.setItem(KEY, JSON.stringify(next));
     setStored(next);
   }
 
-  return { isOpen, toggle };
+  return {
+    isOpen,
+    toggle: (date: string) => set(date, !isOpen(date)),
+    open: (date: string) => set(date, true),
+  };
 }

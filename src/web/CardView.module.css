@@ -1,43 +1,173 @@
 .sortable {
+  position: relative;
   border-radius: var(--radius-card);
   touch-action: manipulation;
   cursor: pointer;
 }
 
+.sortable:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* The slot a lifted card will drop into: a gray block as tall as the card. */
 .sortable[data-dragging="true"] {
-  opacity: 0.4;
+  background: var(--placeholder);
+}
+
+.sortable[data-dragging="true"] .face {
+  box-shadow: none;
+}
+
+.sortable[data-dragging="true"] > * {
+  visibility: hidden;
 }
 
 .face {
+  position: relative;
   padding: 8px 12px 4px;
   background: var(--surface);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow);
+  transition: background-color var(--motion-fast) ease-out;
 }
 
 .sortable:hover .face {
   background: rgb(250 251 252);
 }
 
-.stripe {
+/* The card that follows the pointer. */
+.face[data-lifted="true"] {
+  transform: rotate(4deg);
+  box-shadow:
+    0 8px 12px #091e4226,
+    0 0 1px #091e424f;
+  cursor: grabbing;
+}
+
+.stripe,
+.pill {
   display: block;
-  width: 40px;
-  height: 8px;
-  margin-bottom: 4px;
-  border-radius: var(--radius-chip);
+  margin: 0 0 4px;
+  padding: 0;
+  border: 0;
   background: var(--stripe);
 }
 
-.title {
-  margin-bottom: 4px;
-  overflow-wrap: anywhere;
+.stripe {
+  width: 40px;
+  height: 8px;
+  border-radius: var(--radius-chip);
 }
 
-.check {
-  display: inline-block;
-  margin: -2px 4px -2px 0;
-  vertical-align: middle;
+.pill {
+  max-width: 100%;
+  padding: 0 8px;
+  border-radius: var(--radius-chip);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--stripe-text);
+  text-align: left;
+}
+
+.stripe:hover,
+.pill:hover {
+  filter: brightness(0.92);
+}
+
+.titleRow {
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.title {
+  padding-right: 22px;
+  overflow-wrap: anywhere;
+  transition: transform 0.3s ease-in;
+}
+
+/* The completion circle fades in while the title slides right to make room. */
+.complete {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 2px solid var(--neutral-pressed);
+  border-radius: 6px;
+  background: transparent;
+  color: transparent;
+  opacity: 0;
+  transition:
+    opacity 0.3s ease-in,
+    background-color var(--motion-fast) ease-out;
+}
+
+.complete:hover {
+  background: var(--subtle-hover);
+}
+
+.sortable:hover .complete,
+.sortable:focus-within .complete {
+  opacity: 1;
+}
+
+.sortable:hover .title,
+.sortable:focus-within .title,
+.titleRow[data-done="true"] .title {
+  transform: translateX(22px);
+}
+
+/* A finished card shows its check in the circle's place, always. */
+.complete[data-done="true"] {
+  border-color: transparent;
   color: var(--success);
+  opacity: 1;
+}
+
+.complete[data-size="back"] {
+  position: static;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  opacity: 1;
+}
+
+.edit {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text-subtle);
+  opacity: 0;
+  transition:
+    opacity var(--motion-fast) ease-out,
+    background-color var(--motion-fast) ease-out;
+}
+
+.sortable:hover .edit,
+.sortable:focus-within .edit {
+  opacity: 1;
+}
+
+.edit:hover {
+  background: #f1f2f4;
+}
+
+.edit:active {
+  background: #dcdfe4;
 }
 
 .badges {

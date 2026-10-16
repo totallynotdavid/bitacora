@@ -66,6 +66,7 @@
   font-weight: 600;
   color: var(--text-subtle);
   text-align: left;
+  transition: background-color var(--motion-fast) ease-out;
 }
 
 .dayHeader:hover {
@@ -74,6 +75,21 @@
 
 .dayHeader[data-over="true"] {
   background: rgb(24 104 219 / 0.16);
+}
+
+.collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--motion-slow) ease-out;
+}
+
+.collapsible[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+
+.collapsibleInner {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .dayLabel {
@@ -90,6 +106,7 @@
   background: transparent;
   font-weight: 500;
   color: var(--text-subtle);
+  transition: background-color var(--motion-fast) ease-out;
 }
 
 .older:hover {

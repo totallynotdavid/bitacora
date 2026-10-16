@@ -13,7 +13,7 @@ export function containerId(c: Container): string {
   return "en_curso";
 }
 
-/** A collapsed day group is dropped on through its header, whose id adds this suffix. */
+/** A day group is also dropped on through its header, whose id adds this suffix. */
 export const HEADER_SUFFIX = ":header";
 
 export function parseContainerId(raw: string): Container | null {
@@ -33,4 +33,28 @@ export function inContainer(cards: Card[], container: Container): Card[] {
 export function doneDays(cards: Card[]): string[] {
   const days = new Set(cards.flatMap((card) => (card.doneDate ? [card.doneDate] : [])));
   return [...days].toSorted().toReversed();
+}
+
+/** The container with the fields its list does not use cleared, as the server stores it. */
+function normalized(target: Container): Container {
+  return {
+    list: target.list,
+    later: target.list === "pendiente" && target.later,
+    doneDate: target.list === "hecho" ? target.doneDate : null,
+  };
+}
+
+/**
+ * Puts a card into a container just before `beforeId`, or at the end when that
+ * card is not in the container. The container's positions become 1..n.
+ */
+export function placeCard(cards: Card[], id: string, target: Container, beforeId: string | null): Card[] {
+  const moving = cards.find((card) => card.id === id);
+  if (!moving) return cards;
+  const rest = cards.filter((card) => card.id !== id);
+  const peers = inContainer(rest, target);
+  const at = beforeId === null ? -1 : peers.findIndex((card) => card.id === beforeId);
+  peers.splice(at < 0 ? peers.length : at, 0, { ...moving, ...normalized(target) });
+  const renumbered = new Map(peers.map((card, i) => [card.id, { ...card, position: i + 1 }]));
+  return [...rest.filter((card) => !renumbered.has(card.id)), ...renumbered.values()];
 }
