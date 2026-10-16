@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Card } from "../src/shared/model";
 import { owner, send, setNow } from "./helpers";
 
 const NOON_FRIDAY = "2026-10-16T17:00:00Z"; // 12:00 in Lima
@@ -198,5 +199,48 @@ describe("moving cards", () => {
       json: { list: "hecho", index: 0 },
     });
     expect(res.status).toBe(404);
+  });
+});
+
+describe("card by id", () => {
+  it("creates a card under the id the client chose, once", async () => {
+    const me = await owner();
+    const id = crypto.randomUUID();
+    const first = await me.call<Card>("/api/cards", "POST", { id, title: "Uno", list: "en_curso" });
+    const again = await me.call<Card>("/api/cards", "POST", { id, title: "Otro", list: "en_curso" });
+    expect(first.id).toBe(id);
+    expect(again).toEqual(first);
+    expect((await me.board()).cards).toHaveLength(1);
+  });
+
+  it("refuses an id that is not a UUID", async () => {
+    const me = await owner();
+    const res = await send("/api/cards", {
+      method: "POST",
+      cookie: me.cookie,
+      json: { id: "x", title: "Uno", list: "pendiente" },
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it("reads one card, including one done in an earlier week", async () => {
+    setNow(NOON_FRIDAY);
+    const me = await owner();
+    const old = await me.add("Vieja", "hecho");
+    await me.edit(old.id, { doneDate: "2026-09-01" });
+    expect(await me.call<Card>(`/api/cards/${old.id}`)).toMatchObject({
+      title: "Vieja",
+      doneDate: "2026-09-01",
+    });
+    const res = await send("/api/cards/nope", { cookie: me.cookie });
+    expect(res.status).toBe(404);
+  });
+});
+
+describe("card pages", () => {
+  it("sends a card URL without a session to the login page", async () => {
+    const res = await send("/c/3f2a");
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toBe("/login");
   });
 });
