@@ -1,0 +1,103 @@
+{
+  "lists": ["Trabajando", "Hoy", "Esta semana", "Pendiente", "Completado"],
+  "labels": [
+    { "name": "Augusto", "color": "green" },
+    { "name": "Rodrigo", "color": "blue" },
+    { "name": "", "color": "red" }
+  ],
+  "cards": [
+    {
+      "name": "Revisar API de pagos",
+      "list": "Hoy",
+      "pos": 2000,
+      "desc": "Primera línea\nSegunda línea",
+      "labels": [{ "name": "Augusto", "color": "green" }],
+      "members": [],
+      "checklists": [
+        {
+          "name": "Pasos",
+          "items": [
+            { "name": "Leer el contrato", "done": true },
+            { "name": "Probar el sandbox", "done": false }
+          ]
+        }
+      ],
+      "lastActivity": "2026-10-06T15:00:00.000Z",
+      "history": [{ "t": "createCard", "to": "Hoy", "at": "2026-10-06T15:00:00.000Z" }]
+    },
+    {
+      "name": "Informe de ventas",
+      "list": "Trabajando",
+      "pos": 9000,
+      "desc": "",
+      "labels": [{ "name": "", "color": "red" }],
+      "members": [],
+      "checklists": [],
+      "lastActivity": "2026-10-07T15:00:00.000Z",
+      "history": []
+    },
+    {
+      "name": "Estudiar Rust",
+      "list": "Esta semana",
+      "pos": 100,
+      "desc": "",
+      "labels": [],
+      "members": [],
+      "checklists": [],
+      "lastActivity": "2026-10-07T15:00:00.000Z",
+      "history": []
+    },
+    {
+      "name": "Migrar la base de datos",
+      "list": "Pendiente",
+      "pos": 50,
+      "desc": "No pasar al cliente 'viejo'",
+      "labels": [{ "name": "Rodrigo", "color": "blue" }],
+      "members": [],
+      "checklists": [],
+      "lastActivity": "2026-10-07T15:00:00.000Z",
+      "history": []
+    },
+    {
+      "name": "Configurar CI",
+      "list": "Completado",
+      "pos": 300,
+      "desc": "",
+      "labels": [],
+      "members": [],
+      "checklists": [],
+      "lastActivity": "2026-10-14T03:30:00.000Z",
+      "history": [
+        { "t": "createCard", "to": "Pendiente", "at": "2026-10-12T14:00:00.000Z" },
+        { "t": "updateCard", "to": "Completado", "at": "2026-10-14T03:30:00.000Z" }
+      ]
+    },
+    {
+      "name": "Tarea creada ya terminada",
+      "list": "Completado",
+      "pos": 200,
+      "desc": "",
+      "labels": [{ "name": "Augusto", "color": "green" }],
+      "members": [],
+      "checklists": [],
+      "lastActivity": "2026-10-16T10:00:00.000Z",
+      "history": [{ "t": "createCard", "to": "Completado", "at": "2026-10-15T10:00:00.000Z" }]
+    },
+    {
+      "name": "Tarea reabierta y cerrada otra vez",
+      "list": "Completado",
+      "pos": 100,
+      "desc": "",
+      "labels": [],
+      "members": [],
+      "checklists": [],
+      "lastActivity": "2026-10-14T15:00:00.000Z",
+      "history": [
+        { "t": "createCard", "to": "Pendiente", "at": "2026-10-08T15:00:00.000Z" },
+        { "t": "updateCard", "to": "Completado", "at": "2026-10-09T15:00:00.000Z" },
+        { "t": "updateCard", "to": "Pendiente", "at": "2026-10-10T15:00:00.000Z" },
+        { "t": "updateCard", "to": "Completado", "at": "2026-10-14T15:00:00.000Z" }
+      ]
+    }
+  ]
+}
