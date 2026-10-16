@@ -22,9 +22,33 @@ applies the migrations to the local D1 database and serves the app at
 
 - Drag cards between lists, between the two Pendiente groups ("Esta semana",
   "Después") and inside a list. With the keyboard, focus a card, press Space to
-  lift it, the arrow keys to move it and Space to drop it. Enter opens the card.
-- A card dropped into Hecho gets today's date in America/Lima. Moving it out
-  clears the date. The card dialog changes the date for work finished earlier.
+  lift it, the arrow keys to move it and Space to drop it. Escape cancels a
+  drag. Enter opens the card.
+- Every change shows at once and saves in the background. If a save fails, the
+  card goes back and a notice offers to retry.
+- "Añade una tarjeta" at the foot of a list opens a composer. Enter adds the
+  card and keeps the composer open for the next one. The composer in Hecho adds
+  to today.
+- Hovering a card shows a circle left of the title and an edit button in its
+  corner. The circle moves the card to the top of today in Hecho. In Hecho, the
+  green check moves it back to En curso.
+- The edit button, or `e` while hovering the card, edits the title in place and
+  lists the card's actions beside it.
+- A click opens the card. Each field in it saves on its own. The list button in
+  its header moves the card. Its address is `/c/<id>`, and the browser's back
+  button closes it.
+- Delete shows "Tarjeta eliminada. Deshacer" for 6 seconds. The card is deleted
+  when the notice closes.
+- "Filtrar" hides the cards that do not match a text, a category or a requester.
+  The filter is in the address, so a reload keeps it.
+- A click on a category stripe turns every stripe into a label with the
+  category's name, and back.
+- Shortcuts, when the focus is not in a text field: `n` opens the composer of
+  the list under the pointer, `e` edits a card, `f` opens the filter, `x` clears
+  it and `?` shows the list of shortcuts.
+- A card dropped into Hecho gets today's date in America/Lima. Dropped on a day
+  header, it gets that day. Moving it out clears the date. The card changes the
+  date for work finished earlier.
 - Hecho shows the days of the current week. "Semanas anteriores" loads earlier
   weeks one at a time.
 - The settings dialog shows the report link, copies it and regenerates it.
@@ -120,8 +144,13 @@ the deploy. The first deploy on an account asks you to register the
 ## Develop
 
 ```sh
-bun run check   # format, lint, types and tests
+bun run check      # format, lint, types, Worker tests and browser tests
+bun run test       # the Worker tests alone
+bun run test:e2e   # the browser tests alone
 ```
+
+The browser tests need Chromium (`bunx playwright install chromium`). They start
+`bun run dev` on a port and a D1 state of their own, which they delete first.
 
 The code map and the rules the code keeps are in
 [docs/architecture.md](docs/architecture.md).

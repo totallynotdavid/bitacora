@@ -10,6 +10,7 @@ src/import   Trello export to cards
 scripts      hash-password, import-trello, prepare-dev
 drizzle      generated migrations
 test         tests that drive the Worker over HTTP
+e2e          Playwright tests that drive the app in Chromium
 ```
 
 ## Requests
@@ -20,7 +21,8 @@ test         tests that drive the Worker over HTTP
 2. `/api/*` (`routes/api.ts`), the JSON API. It checks the session itself.
 3. `/r/<token>` (`routes/report.tsx`), public.
 4. `/assets/*` and `/favicon.svg`, public static files.
-5. Everything else needs the session and returns the React app.
+5. Everything else needs the session and returns the React app, including a
+   card's own page, `/c/<id>`.
 
 Without a session, a page request redirects to `/login` and an API request gets
 401 (`session.ts`).
@@ -39,7 +41,7 @@ only the order means anything. All writes are in `src/worker/cards.ts`.
 
 | Write                          | What runs                                                                                                                                                                                                   |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Create                         | One INSERT that computes `max(position) + 1` inside the statement.                                                                                                                                          |
+| Create                         | One INSERT that computes `max(position) + 1` inside the statement. The client may choose the card's id. A second create with the same id inserts nothing and returns the stored card.                       |
 | Move, or reorder with an index | One batch: the card's fields with a slot computed in SQL (half a step before the card now at the index, or after the last), then a renumber 1..n of the destination group, then of the group the card left. |
 | Edit without a move            | One UPDATE of the edited fields. Positions stay.                                                                                                                                                            |
 | Delete                         | One DELETE. The group keeps a gap and its order.                                                                                                                                                            |
@@ -47,20 +49,21 @@ only the order means anything. All writes are in `src/worker/cards.ts`.
 
 Two tabs moving into one group both succeed. The second batch runs after the
 first and renumbers everything, so positions stay distinct. A request carries
-the index its tab saw, so the later request can land one slot off from what its
-tab showed. The next board fetch shows the real order.
+the index its tab computed from the cards it holds, so the later request can
+land one slot off from what its tab showed. A tab fetches the board once, when
+it loads, so it shows the real order after the next load.
 
 ### Done date
 
 The date exists exactly when the list is Hecho. The `cards` table enforces it
 with a CHECK constraint, as it does `later` only in Pendiente.
 
-| Move                                                   | Done date                                 |
-| ------------------------------------------------------ | ----------------------------------------- |
-| Into Hecho, no date given (a drag from another list)   | Today in Lima                             |
-| Into Hecho with a date, or a date edited in the dialog | The given date, never in the future (400) |
-| To another day inside Hecho                            | That day                                  |
-| Out of Hecho                                           | Cleared                                   |
+| Move                                                 | Done date                                 |
+| ---------------------------------------------------- | ----------------------------------------- |
+| Created in Hecho, or moved into it with no date      | Today in Lima                             |
+| Into Hecho with a date, or a date edited in the card | The given date, never in the future (400) |
+| To another day inside Hecho                          | That day                                  |
+| Out of Hecho                                         | Cleared                                   |
 
 The placement comes from the card as read at the start of the request. When two
 tabs change one card, the later write wins. A move writes list, `later` and date
@@ -111,9 +114,80 @@ Workers runtime allows. The cookie is HttpOnly, Secure and SameSite=Lax.
 
 ## Board in the browser
 
+### Card state
+
+`src/web/useBoard.ts` is the only owner of the cards. Components read the cards
+it returns and call its actions: `add`, `edit`, `move`, `remove`, `open` and
+`loadOlder`. They keep no copy.
+
+The hook holds `base`, the cards as the server holds them, and `pending`, the
+changes the user made that the server has not confirmed. The screen shows `base`
+with every pending change applied (`boardState.ts`). A change shows at once, and
+the board is never fetched again after a write.
+
+- Writes go out one at a time, in the order made.
+- A write that succeeds folds into `base`. The card the server returns replaces
+  the local one, so its position and done date come from the server.
+- A write that fails is dropped from `pending`, which puts the card back. A
+  toast reads "No se pudo guardar. Reintentar", and Reintentar queues the same
+  change again.
+- A move names the card it goes before. The index in the request is computed
+  from `base` when the write is sent, so earlier writes, deleted cards and the
+  filter do not shift it.
+- A new card gets its id in the browser (`crypto.randomUUID`), so it can be
+  edited, and opened, before the server answers. `open` looks for a card in the
+  cards on screen (`base` plus `pending`) and reads from `/api` only a card
+  that is not there.
+- A delete is held in `pending` for 6 seconds behind the toast "Tarjeta
+  eliminada. Deshacer". Deshacer drops it. When the toast closes, the request is
+  queued. If the page hides first, the held deletes go out as `fetch` with
+  `keepalive`. A delete that gets 404 counts as done.
+
+The completion circle on a card (`Board.tsx`) is a move. Outside Hecho it goes
+before the first card of today's group, so the card lands on top. In Hecho it
+goes to the end of En curso.
+
+### Drag and drop
+
 `src/web/groups.ts` names every drop target: `pendiente:week`,
-`pendiente:later`, `en_curso` and `hecho:<date>`. A collapsed day keeps a
-`:header` target so a card can still be dropped on it. `useCardDrag.ts` keeps
-the order while dragging and sends one move request on drop. The board is
-fetched again after every write. The open or closed state of each day is in
-localStorage under `bitacora.hecho-open`.
+`pendiente:later`, `en_curso` and `hecho:<date>`. Each day in Hecho also has a
+`:header` target, open or collapsed, so a card dropped on a day header joins
+that day. An empty list or group is a target too.
+
+`useCardDrag.ts` starts a drag after the pointer moves 5px, so a click still
+opens the card. While a card is lifted, a local copy of the cards shows the gray
+placeholder in the slot the card would take. A drop hands the final place to
+`useBoard.move` and discards the copy in the same render, so the card stays
+where the placeholder was. Escape cancels the drag. The keyboard sensor lifts a
+card with Space, moves it with the arrows and drops it with Space.
+
+### URL and local state
+
+| State                     | Kept in                                   |
+| ------------------------- | ----------------------------------------- |
+| The open card             | The path `/c/<id>` (`useCardRoute.ts`)    |
+| The filter                | The query `q`, `categoria`, `solicitante` |
+| Open or closed day        | localStorage, `bitacora.hecho-open`       |
+| Labels as pills or stripe | localStorage, `bitacora.labels-expanded`  |
+| Composer drafts           | Memory, until the page reloads            |
+
+Opening a card pushes `/c/<id>`, so the back button closes it. A page loaded on
+`/c/<id>` fetches the card with `GET /api/cards/<id>` when the loaded weeks do
+not hold it. When the server has no such card, the board shows the toast "No se
+encontró la tarjeta." and the URL returns to `/`.
+
+### Layers and keys
+
+`useEscape.ts` keeps a stack of open layers (popover, dialog, composer, title
+field). Escape closes the last one opened. Modal dialogs use the native
+`<dialog>`, which traps focus, so a popover opened from the card back renders
+inside it. `Board.tsx` handles the letter shortcuts that the `?` dialog lists.
+They do nothing while the focus is in a text field or a modal is open.
+
+### Motion
+
+Hover backgrounds, popovers and the day groups animate for 85 to 150ms
+(`--motion-fast`, `--motion` and `--motion-slow` in `styles/tokens.css`). A day
+group collapses by animating `grid-template-rows`. `styles/global.css` turns
+every animation and transition off under `prefers-reduced-motion: reduce`. The
+report page has no animation.
