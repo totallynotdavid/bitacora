@@ -1,0 +1,72 @@
+.sortable {
+  border-radius: var(--radius-card);
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.sortable[data-dragging="true"] {
+  opacity: 0.4;
+}
+
+.face {
+  padding: 8px 12px 4px;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow);
+}
+
+.sortable:hover .face {
+  background: rgb(250 251 252);
+}
+
+.stripe {
+  display: block;
+  width: 40px;
+  height: 8px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-chip);
+  background: var(--stripe);
+}
+
+.title {
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
+.check {
+  display: inline-block;
+  margin: -2px 4px -2px 0;
+  vertical-align: middle;
+  color: var(--success);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  margin-bottom: 4px;
+  color: var(--text-subtle);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.badge[data-complete="true"] {
+  color: var(--success);
+}
+
+.chip {
+  padding: 0 8px;
+  border-radius: var(--radius-chip);
+  background: rgb(9 30 66 / 0.08);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text);
+}

@@ -1,0 +1,105 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--space-3);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.label {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--text-subtle);
+}
+
+.input {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid rgb(9 30 66 / 0.25);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+textarea.input {
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.primary,
+.secondary,
+.danger {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-card);
+  font-weight: 500;
+}
+
+.primary {
+  background: var(--link);
+  color: #fff;
+}
+
+.primary:hover {
+  background: #1558bc;
+}
+
+.secondary {
+  background: rgb(9 30 66 / 0.06);
+}
+
+.secondary:hover {
+  background: var(--hover);
+}
+
+.danger {
+  background: transparent;
+  color: var(--danger);
+}
+
+.danger:hover {
+  background: rgb(174 46 36 / 0.1);
+}
+
+.confirm {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-card);
+  background: rgb(174 46 36 / 0.08);
+}
+
+.confirm p {
+  margin: 0 0 var(--space-2);
+}
+
+.confirmActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.destroy {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--danger);
+  color: #fff;
+  font-weight: 500;
+}

@@ -1,0 +1,22 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-1);
+}
+
+.stack:empty {
+  display: none;
+}
+
+.stack[data-dragging="true"]:empty {
+  display: flex;
+  min-height: 40px;
+  margin: var(--space-1);
+  border-radius: var(--radius-card);
+  background: var(--hover);
+}
+
+.stack[data-over="true"] {
+  background: rgb(24 104 219 / 0.16);
+}

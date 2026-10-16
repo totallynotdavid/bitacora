@@ -1,0 +1,125 @@
+.column {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 var(--list-width);
+  width: var(--list-width);
+  max-height: 100%;
+  border-radius: var(--radius-list);
+  background: var(--list-background);
+  box-shadow: var(--shadow);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 4px 16px;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-size);
+  line-height: var(--text-leading);
+  font-weight: 650;
+  color: var(--text-subtle);
+}
+
+.count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 var(--space-1);
+}
+
+.group + .group {
+  margin-top: var(--space-2);
+}
+
+.groupLabel {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 4px 12px 0;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--text-subtle);
+}
+
+.dayHeader {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-subtle);
+  text-align: left;
+}
+
+.dayHeader:hover {
+  background: var(--hover);
+}
+
+.dayHeader[data-over="true"] {
+  background: rgb(24 104 219 / 0.16);
+}
+
+.dayLabel {
+  flex: 1;
+}
+
+.older {
+  display: block;
+  width: 100%;
+  height: 32px;
+  margin-top: var(--space-2);
+  border: 0;
+  border-radius: var(--radius-card);
+  background: transparent;
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+.older:hover {
+  background: var(--hover);
+}
+
+.footer {
+  padding: var(--space-1) var(--space-1) var(--space-1);
+}
+
+@media (max-width: 767px) {
+  .column {
+    flex-basis: auto;
+    width: 100%;
+    max-height: none;
+  }
+
+  .body {
+    overflow-y: visible;
+  }
+
+  .column[data-list="en_curso"] {
+    order: 1;
+  }
+
+  .column[data-list="pendiente"] {
+    order: 2;
+  }
+
+  .column[data-list="hecho"] {
+    order: 3;
+  }
+}

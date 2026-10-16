@@ -1,0 +1,52 @@
+.dialog {
+  width: min(480px, calc(100vw - 24px));
+  max-height: calc(100vh - 48px);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-list);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-raised);
+}
+
+.dialog[data-wide="true"] {
+  width: min(640px, calc(100vw - 24px));
+}
+
+.dialog::backdrop {
+  background: rgb(9 30 66 / 0.54);
+}
+
+.content {
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 650;
+  color: var(--heading);
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: transparent;
+  color: var(--text-subtle);
+}
+
+.close:hover {
+  background: var(--hover);
+}
