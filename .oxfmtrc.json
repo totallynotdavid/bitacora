@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "printWidth": 110,
-  "ignorePatterns": ["drizzle/meta", "*.md", "bun.lock"]
+  "ignorePatterns": ["drizzle/meta", "bun.lock"],
+  "overrides": [{ "files": ["**/*.md"], "options": { "printWidth": 80, "proseWrap": "always" } }]
 }
