@@ -3,17 +3,24 @@ import { MIN_PASSWORD } from "../../shared/model";
 import { Document } from "./layout";
 
 const LOGIN_CSS = `
-main { max-width: 320px; margin: 18vh auto 0; padding: 24px; background: #fff; border-radius: 12px;
-  box-shadow: 0 1px 1px rgba(30 31 33 / .25), 0 0 1px rgba(30 31 33 / .31); }
-h1 { margin: 0 0 16px; font-size: 16px; font-weight: 650; color: rgb(23 43 77); }
-label { display: block; margin: 12px 0 4px; font-weight: 600; color: rgb(80 82 88); }
-input { width: 100%; height: 36px; padding: 0 12px; border: 1px solid rgb(9 30 66 / .25); border-radius: 8px; font: inherit; }
-input:focus-visible { outline: 2px solid #1868db; outline-offset: 1px; }
-button { margin-top: 16px; width: 100%; height: 36px; border: 0; border-radius: 8px; background: #1868db;
-  color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
-button:hover { background: #1558bc; }
-.error { margin: 0 0 12px; color: #ae2e24; }
-.note { margin: 0 0 12px; color: rgb(80 82 88); }
+body { display: grid; place-items: center; }
+main { width: min(22.5rem, 100% - var(--space-8)); padding: var(--space-6);
+  background: var(--overlay); border-radius: var(--radius-lg); }
+h1 { margin-bottom: var(--space-4); font-size: var(--text-lg); line-height: var(--leading-tight); font-weight: var(--weight-strong); }
+label { display: block; margin: var(--space-4) 0 var(--space-1); font-weight: var(--weight-strong); }
+input { width: 100%; height: var(--field); padding: 0 var(--space-3); border: 1px solid var(--border-control);
+  border-radius: var(--radius-md); background: var(--field-background); font: inherit; font-size: var(--text-base);
+  transition: border-color var(--duration-fast) var(--ease-out); }
+input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--focus); }
+button { margin-top: var(--space-6); width: 100%; height: var(--field); padding: 0; border: 0; border-radius: var(--radius-md);
+  background: var(--accent); color: var(--text-on-solid); font: inherit; font-size: var(--text-base);
+  font-weight: var(--weight-strong); cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { button:hover { background: var(--accent-hover); } }
+button:active { transform: scale(0.97); }
+.error { margin-bottom: var(--space-3); color: var(--text-danger); font-weight: var(--weight-strong); }
+.note { margin-bottom: var(--space-3); color: var(--text-muted); }
+a { color: var(--text-accent); }
 `;
 
 type Field = {
@@ -36,7 +43,7 @@ function FormPage(props: {
 }) {
   return (
     <Document title={`${props.title} · Bitácora`} css={LOGIN_CSS}>
-      <main>
+      <main data-elevation="overlay">
         <h1>{props.title}</h1>
         {props.note && <p class="note">{props.note}</p>}
         <form method="post" action={props.action}>
@@ -138,7 +145,7 @@ export function ResetPage(props: { token: string; error?: string }) {
 export function LinkGonePage() {
   return (
     <Document title="Enlace no válido · Bitácora" css={LOGIN_CSS}>
-      <main>
+      <main data-elevation="overlay">
         <h1>Este enlace ya no sirve</h1>
         <p class="note">Ya se usó o venció. Pide uno nuevo a quien te lo envió.</p>
         <p class="note">

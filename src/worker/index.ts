@@ -22,6 +22,7 @@ app.route("/r", report);
 
 // Static assets are public. The fallback page still requires a session.
 app.get("/assets/*", (c) => c.env.ASSETS.fetch(c.req.raw));
+app.get("/fonts/*", (c) => c.env.ASSETS.fetch(c.req.raw));
 app.get("/favicon.svg", (c) => c.env.ASSETS.fetch(c.req.raw));
 
 app.use(requireSession);
