@@ -22,7 +22,7 @@ e2e          Playwright tests that drive the app in Chromium
 2. `/api/*` (`routes/api.ts`), the JSON API. It checks the session itself.
    `/api/members` (`routes/members.ts`) also needs the admin role.
 3. `/r/<token>` (`routes/report.tsx`), public.
-4. `/assets/*` and `/favicon.svg`, public static files.
+4. `/assets/*`, `/fonts/*` and `/favicon.svg`, public static files.
 5. Everything else needs the session and returns the React app, including a
    card's own page, `/c/<id>`.
 
@@ -268,6 +268,7 @@ card with Space, moves it with the arrows and drops it with Space.
 | The filter                 | The query `q`, `etiqueta`, `solicitante` |
 | Open or closed day         | localStorage, `bitacora.hecho-open`      |
 | Stripes as names or stripe | localStorage, `bitacora.labels-expanded` |
+| Theme: Claro or Oscuro     | localStorage, `bitacora.theme`           |
 | Composer drafts            | Memory, until the page reloads           |
 
 `etiqueta` holds a label id, or `none` for cards without a label.
@@ -287,14 +288,42 @@ They do nothing while the focus is in a text field or a modal is open.
 
 ### Layout
 
-The board shows the four lists side by side. Each list has its count in the
-header and one composer at its foot. On a narrow screen the lists stack, with En
-curso first, then Esta semana, Pendiente and Hecho.
+The header holds the board title and Filtrar on the left and one user menu on
+the right, named with the person's name. The menu (`UserMenu.tsx`) offers
+Ajustes, Tema, Atajos de teclado and Salir.
+
+From 768px the four lists sit side by side. Each list has its count in the
+header and one composer at its foot. A list with no cards shows one line that
+names its next action, or "Sin coincidencias" while a filter is on.
+
+Under 768px a tab bar names the four lists and `Board.tsx` shows the one chosen,
+starting on En curso. The other lists are `display: none`, so on a narrow screen
+a card changes list through Mover on the card back. The chosen tab lives in
+memory only.
+
+### Look
+
+`src/web/styles/tokens.css` is the one file with colors, sizes, radii, shadows,
+motion and the font. Components read role names and write none of those values.
+`docs/design.md` has the rules.
+
+The server pages (login, invitation, reset and the report) import the same file
+with `?raw` (`views/layout.tsx`) and inline it, so they match the app. They
+follow the system theme and read no stored choice.
+
+The app follows the system theme. `UserMenu.tsx` offers Sistema, Claro and
+Oscuro. A choice in `bitacora.theme` sets `data-theme` on `<html>`. An inline
+script in `index.html` sets it before first paint, so a pinned dark page never
+shows a light frame. Sistema removes the key and the attribute.
+
+Inter is served from `public/fonts/` through `/fonts/*`, preloaded, and no page
+requests a font from another origin.
 
 ### Motion
 
-Hover backgrounds, popovers and the day groups animate for 85 to 150ms
-(`--motion-fast`, `--motion` and `--motion-slow` in `styles/tokens.css`). A day
-group collapses by animating `grid-template-rows`. `styles/global.css` turns
-every animation and transition off under `prefers-reduced-motion: reduce`. The
-report page has no animation.
+Hover backgrounds, popovers and the day groups animate for 120 to 250ms
+(`--duration-fast`, `--duration` and `--duration-slow`) with `--ease-out`. A day
+group collapses by animating `grid-template-rows`. Hover styles apply only where
+the device hovers with a fine pointer, and a pressed button scales to 0.97.
+`styles/global.css` turns every animation and transition off under
+`prefers-reduced-motion: reduce`. The report page has no animation.

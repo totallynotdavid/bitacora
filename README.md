@@ -56,6 +56,10 @@ applies the migrations to the local D1 database and serves the app at
   date for work finished earlier.
 - Hecho shows the days of the current week. "Semanas anteriores" loads earlier
   weeks one at a time.
+- Your name at the top right opens a menu with Ajustes, Tema, Atajos de teclado
+  and Salir. Tema is Sistema, Claro or Oscuro; Sistema follows the device.
+- On a screen narrower than 768px the lists become tabs, starting on En curso.
+  Mover in a card changes its list there.
 - The settings dialog (Ajustes) changes your name and password and shows your
   report link, which it copies and regenerates. Regenerating invalidates the old
   link. Changing the password signs out your other browsers.
@@ -189,4 +193,5 @@ the app and serve it with `vite preview` on a port and a D1 state of their own,
 which they delete first.
 
 The code map and the rules the code keeps are in
-[docs/architecture.md](docs/architecture.md).
+[docs/architecture.md](docs/architecture.md). The color, type, space and motion
+rules are in [docs/design.md](docs/design.md).
