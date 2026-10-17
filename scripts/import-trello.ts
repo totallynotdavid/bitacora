@@ -2,32 +2,48 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { mapTrelloExport, toSql } from "../src/import/trello";
+import { parseArgs } from "node:util";
+import { mapTrelloExport, ownerKeyOf, toSql, type Owner } from "../src/import/trello";
+import { FIRST_ADMIN_ID } from "../src/worker/db/first-admin";
+import { targetArgs } from "./d1";
 
-const USAGE = "Usage: bun run import:trello <export.json> [--apply local|remote]";
+const USAGE = "Usage: bun run import:trello <export.json> [--email <email>] [--apply local|remote]";
 
-const args = process.argv.slice(2);
-const applyAt = args.indexOf("--apply");
-const target = applyAt === -1 ? null : args[applyAt + 1];
-const path = args.find((arg, i) => !arg.startsWith("--") && (applyAt === -1 || i !== applyAt + 1));
+const { values, positionals } = parseArgs({
+  allowPositionals: true,
+  options: { apply: { type: "string" }, email: { type: "string" } },
+});
+const [path] = positionals;
 
-if (!path || (applyAt !== -1 && target !== "local" && target !== "remote")) {
+if (!path || (values.apply !== undefined && values.apply !== "local" && values.apply !== "remote")) {
   console.error(USAGE);
   process.exit(2);
 }
 
-const cards = await mapTrelloExport(JSON.parse(readFileSync(path, "utf8")));
-const sql = toSql(cards);
+// Without --email the cards go to the first admin.
+const owner: Owner = values.email ? { email: values.email } : { id: FIRST_ADMIN_ID };
+const cards = await mapTrelloExport(JSON.parse(readFileSync(path, "utf8")), ownerKeyOf(owner));
+const sql = toSql(cards, owner);
 
-if (!target) {
+if (!values.apply) {
   console.log(sql);
   process.exit(0);
 }
 
 const file = join(mkdtempSync(join(tmpdir(), "bitacora-import-")), "import.sql");
 writeFileSync(file, sql);
-const run = spawnSync("bunx", ["wrangler", "d1", "execute", "DB", `--${target}`, "--file", file], {
-  stdio: "inherit",
-});
-if (run.status === 0) console.error(`Imported ${cards.length} cards (${target}).`);
+const run = spawnSync(
+  "bunx",
+  [
+    "wrangler",
+    "d1",
+    "execute",
+    "DB",
+    ...targetArgs({ remote: values.apply === "remote", state: process.env.BITACORA_STATE }),
+    "--file",
+    file,
+  ],
+  { stdio: "inherit" },
+);
+if (run.status === 0) console.error(`Imported ${cards.length} cards (${values.apply}).`);
 process.exit(run.status ?? 1);
