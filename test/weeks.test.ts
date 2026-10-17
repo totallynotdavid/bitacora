@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { dayHeading, weekRangeLabel } from "../src/shared/dates";
 import type { DoneWeek } from "../src/shared/model";
-import { owner, send, setNow } from "./helpers";
+import { admin, setNow } from "./helpers";
 
 describe("Lima days", () => {
   it("dates a card with the Lima day, not the UTC day", async () => {
-    const me = await owner();
+    const me = await admin();
 
     setNow("2026-10-17T04:59:00Z"); // 23:59 Friday 16 in Lima
     const late = await me.add("late", "en_curso");
@@ -17,7 +17,7 @@ describe("Lima days", () => {
   });
 
   it("rolls the board from Sunday to Monday at Lima midnight", async () => {
-    const me = await owner();
+    const me = await admin();
 
     setNow("2026-10-19T04:30:00Z"); // Sunday 18 Oct, 23:30 in Lima
     const sunday = await me.add("domingo", "en_curso");
@@ -40,7 +40,7 @@ describe("Lima days", () => {
 
   it("walks back one week with finished cards at a time, skipping empty weeks", async () => {
     setNow("2026-10-16T17:00:00Z");
-    const me = await owner();
+    const me = await admin();
     for (const [title, day] of [
       ["w42", "2026-10-14"],
       ["w40", "2026-09-30"],
@@ -59,10 +59,9 @@ describe("Lima days", () => {
   });
 
   it("rejects a malformed week", async () => {
-    const me = await owner();
+    const me = await admin();
     for (const week of ["2026-42", "2026-W54", "2025-W53", ""]) {
-      const res = await send(`/api/done?week=${week}`, { cookie: me.cookie });
-      expect(res.status, week).toBe(400);
+      expect(await me.status(`/api/done?week=${week}`), week).toBe(400);
     }
   });
 });

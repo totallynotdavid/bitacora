@@ -1,24 +1,28 @@
 import { describe, expect, it } from "vitest";
-import { owner, send, setNow } from "./helpers";
+import { admin, member, MEMBER, send, setNow } from "./helpers";
 
 const FRIDAY = "2026-10-16T17:00:00Z";
 
 async function seeded() {
   setNow(FRIDAY);
-  const me = await owner();
+  const me = await admin();
+  const development = await me.addLabel("Desarrollo", "green");
+  const courses = await me.addLabel("Cursos", "purple");
   const shipped = await me.add("Publicar la API", "hecho");
   await me.edit(shipped.id, {
-    category: "Desarrollo",
+    labelId: development.id,
     requester: "Augusto",
     description: "Primera línea\nSegunda línea",
     doneDate: "2026-10-15",
   });
   const course = await me.add("Curso de SQL", "hecho");
-  await me.edit(course.id, { category: "Cursos" });
+  await me.edit(course.id, { labelId: courses.id });
+  await me.add("Sin etiqueta alguna", "hecho");
   const lastWeek = await me.add("Tarea de la semana pasada", "hecho");
   await me.edit(lastWeek.id, { doneDate: "2026-10-09" });
   await me.add("Trabajo en marcha", "en_curso");
   await me.add("Todavía pendiente", "pendiente");
+  await me.add("Planeado para la semana", "esta_semana");
   const { reportToken } = await me.settings();
   return { me, token: reportToken };
 }
@@ -35,20 +39,22 @@ describe("weekly report", () => {
     expect(await res.text()).toContain('name="robots" content="noindex');
   });
 
-  it("shows the week, the owner, counts per category and each finished card", async () => {
+  it("shows the week, the user, counts per label and each finished card", async () => {
     const { token } = await seeded();
     const html = await (await report(token)).text();
 
     expect(html).toContain("12 – 18 oct 2026");
     expect(html).toContain("Ana Prueba");
-    expect(html).toMatch(/Desarrollo\s*1/);
     expect(html).toMatch(/Cursos\s*1/);
-    expect(html).toMatch(/Otros\s*0/);
+    expect(html).toMatch(/Desarrollo\s*1/);
+    expect(html).toMatch(/Sin etiqueta\s*1/);
+    expect(html.indexOf("Sin etiqueta 1")).toBeGreaterThan(html.indexOf("Desarrollo 1"));
     expect(html).toContain("Publicar la API");
     expect(html).toContain("Desarrollo · Augusto");
     expect(html).toContain("Primera línea\nSegunda línea");
     expect(html).not.toContain("Tarea de la semana pasada");
     expect(html).not.toContain("Todavía pendiente");
+    expect(html).not.toContain("Planeado para la semana");
   });
 
   it("lists days Monday to Sunday and only those with finished cards", async () => {
@@ -96,6 +102,26 @@ describe("weekly report", () => {
     const res = await report("not-the-token");
     expect(res.status).toBe(404);
     expect(res.headers.get("X-Robots-Tag")).toContain("noindex");
+  });
+
+  it("shows each user only their own cards, under their own name", async () => {
+    const { me, token } = await seeded();
+    const beto = await member(me);
+    await beto.add("Tarea de Beto", "en_curso");
+    const done = await beto.add("Terminada por Beto", "hecho");
+    await beto.edit(done.id, { description: "solo de Beto" });
+
+    const mine = await (await report(token)).text();
+    expect(mine).toContain("Ana Prueba");
+    expect(mine).not.toContain("Beto");
+
+    const theirs = await (await report((await beto.settings()).reportToken)).text();
+    expect(theirs).toContain(MEMBER.name);
+    expect(theirs).toContain("Terminada por Beto");
+    expect(theirs).toContain("Tarea de Beto");
+    expect(theirs).not.toContain("Publicar la API");
+    expect(theirs).not.toContain("Ana Prueba");
+    expect(theirs).not.toContain("Desarrollo");
   });
 });
 

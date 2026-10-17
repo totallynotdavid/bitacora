@@ -1,15 +1,14 @@
 import { expect, test as base, type Locator, type Page } from "@playwright/test";
-import type { Board, Card, DoneWeek, ListId } from "../src/shared/model";
-
-const PASSWORD = "bitacora-dev";
+import type { Board, Card, DoneWeek, Label, LabelColor, ListId } from "../src/shared/model";
+import { DEV_ACCOUNT } from "../scripts/dev-account";
 
 type Seed = {
   title: string;
   list: ListId;
-  later?: boolean;
   doneDate?: string;
   description?: string;
-  category?: Card["category"];
+  /** A label by name. It is created in the given color when the user has none of that name. */
+  label?: { name: string; color: LabelColor };
   requester?: string;
   checklist?: Card["checklist"];
 };
@@ -38,19 +37,32 @@ async function allCards(page: Page): Promise<Card[]> {
 export const test = base.extend<{ bitacora: Bitacora }>({
   bitacora: async ({ page }, use) => {
     // Logging in is not under test, so it goes through the API.
-    const login = await page.request.post("/login", { form: { password: PASSWORD }, maxRedirects: 0 });
+    const { email, password } = DEV_ACCOUNT;
+    const login = await page.request.post("/login", { form: { email, password }, maxRedirects: 0 });
     expect(login.status()).toBe(303);
     for (const card of await allCards(page)) await page.request.delete(`/api/cards/${card.id}`);
+    for (const label of ((await (await page.request.get("/api/board")).json()) as Board).labels) {
+      await page.request.delete(`/api/labels/${label.id}`);
+    }
+
+    const labelNamed = async (name: string, color: LabelColor): Promise<Label> => {
+      const known = ((await (await page.request.get("/api/board")).json()) as Board).labels;
+      const found = known.find((label) => label.name === name);
+      if (found) return found;
+      const res = await page.request.post("/api/labels", { data: { name, color } });
+      return (await res.json()) as Label;
+    };
 
     await use({
       async seed(cards) {
         const created: Card[] = [];
-        for (const { title, list, later, doneDate, ...fields } of cards) {
-          const res = await page.request.post("/api/cards", { data: { title, list, later: later ?? false } });
+        for (const { title, list, doneDate, label, ...fields } of cards) {
+          const res = await page.request.post("/api/cards", { data: { title, list } });
           let card = (await res.json()) as Card;
-          if (doneDate || Object.keys(fields).length > 0) {
+          const labelId = label ? (await labelNamed(label.name, label.color)).id : undefined;
+          if (doneDate || labelId || Object.keys(fields).length > 0) {
             const patch = await page.request.patch(`/api/cards/${card.id}`, {
-              data: { ...fields, doneDate },
+              data: { ...fields, labelId, doneDate },
             });
             card = (await patch.json()) as Card;
           }

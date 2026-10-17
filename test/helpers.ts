@@ -1,7 +1,8 @@
-import { exports } from "cloudflare:workers";
+import { env, exports } from "cloudflare:workers";
 import { vi } from "vitest";
-import { TEST_PASSWORD } from "./constants";
-import type { Board, Card, Settings } from "../src/shared/model";
+import type { Board, Card, IssuedLink, Label, LabelColor, Member, Role, Settings } from "../src/shared/model";
+import { claimAdminSql } from "../src/worker/db/first-admin";
+import { hashPassword } from "../src/worker/password";
 
 type Init = { method?: string; json?: unknown; cookie?: string; form?: Record<string, string> };
 
@@ -30,13 +31,20 @@ export function setNow(iso: string): void {
   vi.setSystemTime(new Date(iso));
 }
 
-export async function login(): Promise<string> {
-  const res = await send("/login", { method: "POST", form: { password: TEST_PASSWORD } });
-  return res.headers.getSetCookie()[0]!.split(";")[0]!;
+export const ADMIN = { email: "ana@example.com", name: "Ana Prueba", password: "clave-de-prueba" };
+export const MEMBER = { email: "beto@example.com", name: "Beto Prueba", password: "otra-clave-de-prueba" };
+
+export const cookieOf = (res: Response): string => res.headers.getSetCookie()[0]!.split(";")[0]!;
+
+/** Signs in through the login form and returns the session cookie. */
+export async function signIn(email: string, password: string): Promise<string> {
+  const res = await send("/login", { method: "POST", form: { email, password } });
+  if (res.status !== 303) throw new Error(`login -> ${res.status}`);
+  return cookieOf(res);
 }
 
-export async function owner() {
-  const cookie = await login();
+/** A signed-in user. Every call carries their cookie. */
+export function clientFor(cookie: string) {
   const call = async <T>(path: string, method = "GET", json?: unknown): Promise<T> => {
     const res = await send(path, { method, json, cookie });
     if (!res.ok) throw new Error(`${method} ${path} -> ${res.status} ${await res.text()}`);
@@ -45,12 +53,48 @@ export async function owner() {
   return {
     cookie,
     call,
+    /** The status of a call, for the ones that must fail. */
+    status: async (path: string, method = "GET", json?: unknown) =>
+      (await send(path, { method, json, cookie })).status,
     board: () => call<Board>("/api/board"),
-    add: (title: string, list: Card["list"], later = false) =>
-      call<Card>("/api/cards", "POST", { title, list, later }),
-    move: (id: string, move: { list: Card["list"]; later?: boolean; index?: number; doneDate?: string }) =>
+    add: (title: string, list: Card["list"]) => call<Card>("/api/cards", "POST", { title, list }),
+    move: (id: string, move: { list: Card["list"]; index?: number; doneDate?: string }) =>
       call<Card>(`/api/cards/${id}/move`, "POST", { index: 0, ...move }),
     edit: (id: string, patch: Record<string, unknown>) => call<Card>(`/api/cards/${id}`, "PATCH", patch),
+    addLabel: (name: string, color: LabelColor = "green") =>
+      call<Label>("/api/labels", "POST", { name, color }),
     settings: () => call<Settings>("/api/settings"),
+    members: () => call<Member[]>("/api/members"),
+    invite: (role: Role = "member") => call<IssuedLink>("/api/members/invites", "POST", { role }),
+    resetLink: (memberId: string) => call<IssuedLink>(`/api/members/${memberId}/reset-link`, "POST"),
   };
+}
+
+export type Client = ReturnType<typeof clientFor>;
+
+/** Claims the first admin the way `bun run claim-admin` does and signs in. */
+export async function admin(): Promise<Client> {
+  await env.DB.exec(
+    claimAdminSql({ email: ADMIN.email, name: ADMIN.name, passwordHash: await hashPassword(ADMIN.password) }),
+  );
+  return clientFor(await signIn(ADMIN.email, ADMIN.password));
+}
+
+/** Signs up through an invite link, the only way an account is made, and lands signed in. */
+export async function signUp(link: IssuedLink, who = MEMBER): Promise<Response> {
+  return send(link.path, {
+    method: "POST",
+    form: { name: who.name, email: who.email, password: who.password },
+  });
+}
+
+/** A member invited by `inviter` and signed up through the real invite flow. */
+export async function member(inviter: Client, who = MEMBER): Promise<Client> {
+  const res = await signUp(await inviter.invite("member"), who);
+  if (res.status !== 303) throw new Error(`sign-up -> ${res.status} ${await res.text()}`);
+  return clientFor(cookieOf(res));
+}
+
+export async function idOf(inviter: Client, email: string): Promise<string> {
+  return (await inviter.members()).find((m) => m.email === email)!.id;
 }

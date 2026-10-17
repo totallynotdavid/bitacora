@@ -195,9 +195,9 @@ test("quick edit saves the title with Enter", async ({ page, bitacora }) => {
   await title.fill("Nuevo");
   await expect(
     page.getByRole("button", {
-      name: /^(Abrir tarjeta|Categoría|Solicitante|Fecha|Mover|Eliminar)$/,
+      name: /^(Abrir tarjeta|Etiqueta|Solicitante|Fecha|Mover|Eliminar)$/,
     }),
-  ).toHaveText(["Abrir tarjeta", "Categoría", "Solicitante", "Fecha", "Mover", "Eliminar"]);
+  ).toHaveText(["Abrir tarjeta", "Etiqueta", "Solicitante", "Fecha", "Mover", "Eliminar"]);
   await title.press("Enter");
 
   await expect(title).toBeHidden();
@@ -341,7 +341,7 @@ test("the filter hides cards and a reload keeps it", async ({ page, bitacora }) 
   await bitacora.seed([
     { title: "Informe mensual", list: "en_curso" },
     { title: "Curso de SQL", list: "pendiente" },
-    { title: "Revisar correo", list: "pendiente", later: true, description: "mirar el informe" },
+    { title: "Revisar correo", list: "esta_semana", description: "mirar el informe" },
   ]);
   await bitacora.open();
 
@@ -362,32 +362,161 @@ test("the filter hides cards and a reload keeps it", async ({ page, bitacora }) 
   await expect(bitacora.card("Curso de SQL")).toBeVisible();
 });
 
-test("clicking a category stripe turns every stripe into a named label, and a reload keeps it", async ({
-  page,
-  bitacora,
-}) => {
-  await bitacora.seed([
-    { title: "Uno", list: "en_curso", category: "Desarrollo" },
-    { title: "Dos", list: "pendiente", category: "Cursos" },
-  ]);
-  await bitacora.open();
+test.describe("labels", () => {
+  test("clicking a stripe turns every stripe into a named label, and a reload keeps it", async ({
+    page,
+    bitacora,
+  }) => {
+    await bitacora.seed([
+      { title: "Uno", list: "en_curso", label: { name: "Desarrollo", color: "green" } },
+      { title: "Dos", list: "pendiente", label: { name: "Cursos", color: "purple" } },
+      { title: "Tres", list: "pendiente" },
+    ]);
+    await bitacora.open();
 
-  await expect(bitacora.card("Uno")).not.toContainText("Desarrollo");
-  await bitacora
-    .card("Uno")
-    .getByRole("button", { name: /^Categoría Desarrollo/ })
-    .click();
-  await expect(bitacora.card("Uno")).toContainText("Desarrollo");
-  await expect(bitacora.card("Dos")).toContainText("Cursos");
-  await expect(dialog(page)).toBeHidden();
+    await expect(bitacora.card("Uno")).not.toContainText("Desarrollo");
+    await expect(bitacora.card("Tres").locator("[data-label]")).toHaveCount(0);
+    await bitacora
+      .card("Uno")
+      .getByRole("button", { name: /^Etiqueta Desarrollo/ })
+      .click();
+    await expect(bitacora.card("Uno")).toContainText("Desarrollo");
+    await expect(bitacora.card("Dos")).toContainText("Cursos");
+    await expect(dialog(page)).toBeHidden();
 
-  await page.reload();
-  await expect(bitacora.card("Dos")).toContainText("Cursos");
-  await bitacora
-    .card("Dos")
-    .getByRole("button", { name: /^Categoría Cursos/ })
-    .click();
-  await expect(bitacora.card("Dos")).not.toContainText("Cursos");
+    await page.reload();
+    await expect(bitacora.card("Dos")).toContainText("Cursos");
+    await bitacora
+      .card("Dos")
+      .getByRole("button", { name: /^Etiqueta Cursos/ })
+      .click();
+    await expect(bitacora.card("Dos")).not.toContainText("Cursos");
+  });
+
+  test("a label made and picked on the card back shows its stripe on the board", async ({
+    page,
+    bitacora,
+  }) => {
+    await bitacora.seed([{ title: "Sin color", list: "en_curso" }]);
+    await bitacora.open();
+    const stripe = bitacora.card("Sin color").locator("[data-label]");
+    await expect(stripe).toHaveCount(0);
+
+    await bitacora.card("Sin color").click();
+    await dialog(page).getByRole("button", { name: "Etiqueta", exact: true }).click();
+    await page.getByRole("button", { name: "Crear etiqueta" }).click();
+    await page.getByRole("textbox", { name: "Nombre" }).fill("Urgente");
+    await page.getByRole("radio", { name: "Rojo" }).check({ force: true });
+    await page.getByRole("button", { name: "Crear", exact: true }).click();
+
+    await expect(dialog(page).getByText("Urgente")).toBeVisible();
+    await dialog(page).getByRole("button", { name: "Cerrar" }).click();
+    await expect(stripe).toHaveCSS("background-color", "rgb(248, 113, 104)");
+    // Closing the card back goes one step back in history; a reload must not cut that short.
+    await expect(page).toHaveURL(/\/$/);
+    await expect
+      .poll(async () => (await bitacora.board()).cards[0]?.labelId)
+      .toBe((await bitacora.board()).labels[0]!.id);
+    await page.reload();
+    await expect(stripe).toHaveCSS("background-color", "rgb(248, 113, 104)");
+
+    // Recoloring changes the stripe, and "Sin etiqueta" removes it.
+    await bitacora.card("Sin color").click();
+    await dialog(page).getByRole("button", { name: "Etiqueta", exact: true }).click();
+    await page.getByRole("button", { name: "Editar etiqueta Urgente" }).click();
+    await page.getByRole("radio", { name: "Azul" }).check({ force: true });
+    await page.getByRole("button", { name: "Guardar", exact: true }).click();
+    await page.getByRole("button", { name: "Sin etiqueta" }).click();
+    await dialog(page).getByRole("button", { name: "Cerrar" }).click();
+    await expect(stripe).toHaveCount(0);
+  });
+
+  test("deleting a label clears it from the board", async ({ page, bitacora }) => {
+    await bitacora.seed([
+      { title: "Marcada", list: "en_curso", label: { name: "Temporal", color: "orange" } },
+    ]);
+    await bitacora.open();
+    await expect(bitacora.card("Marcada").locator("[data-label]")).toHaveCount(1);
+
+    await bitacora.card("Marcada").click();
+    await dialog(page).getByRole("button", { name: "Etiqueta", exact: true }).click();
+    await page.getByRole("button", { name: "Editar etiqueta Temporal" }).click();
+    await page.locator("form").getByRole("button", { name: "Eliminar", exact: true }).click();
+    await page.getByRole("button", { name: "Sí, eliminar" }).click();
+    // The popover stays open on the list of labels.
+    await page.keyboard.press("Escape");
+    await dialog(page).getByRole("button", { name: "Cerrar" }).click();
+
+    await expect(bitacora.card("Marcada").locator("[data-label]")).toHaveCount(0);
+    expect((await bitacora.board()).labels).toEqual([]);
+  });
+
+  test("the filter keeps the cards of one label, or of none", async ({ page, bitacora }) => {
+    await bitacora.seed([
+      { title: "Verde uno", list: "en_curso", label: { name: "Desarrollo", color: "green" } },
+      { title: "Morada uno", list: "en_curso", label: { name: "Cursos", color: "purple" } },
+      { title: "Libre uno", list: "en_curso" },
+    ]);
+    await bitacora.open();
+
+    await page.getByRole("button", { name: "Filtrar" }).click();
+    await page.getByRole("combobox", { name: "Etiqueta" }).selectOption({ label: "Cursos" });
+    await expect(bitacora.card("Morada uno")).toBeVisible();
+    await expect(bitacora.card("Verde uno")).toBeHidden();
+    await expect(bitacora.card("Libre uno")).toBeHidden();
+
+    await page.getByRole("combobox", { name: "Etiqueta" }).selectOption({ label: "Sin etiqueta" });
+    await expect(bitacora.card("Libre uno")).toBeVisible();
+    await expect(bitacora.card("Morada uno")).toBeHidden();
+  });
+});
+
+test.describe("four lists", () => {
+  test("each list has its own count and composer, and a card added to Esta semana stays there", async ({
+    page,
+    bitacora,
+  }) => {
+    await bitacora.seed([
+      { title: "Algún día", list: "pendiente" },
+      { title: "Planeada", list: "esta_semana" },
+    ]);
+    await bitacora.open();
+
+    for (const name of ["Pendiente", "Esta semana", "En curso", "Hecho"]) {
+      await expect(bitacora.list(name).getByRole("button", { name: "Añade una tarjeta" })).toBeVisible();
+    }
+    await expect(bitacora.list("Pendiente").locator("header")).toContainText("1");
+    await expect(bitacora.list("Esta semana").locator("header")).toContainText("1");
+    await expect(bitacora.list("En curso").locator("header")).toContainText("0");
+
+    const week = bitacora.list("Esta semana");
+    await week.getByRole("button", { name: "Añade una tarjeta" }).click();
+    await week.getByRole("textbox", { name: "Título de la tarjeta" }).fill("Otra");
+    await page.keyboard.press("Enter");
+    await expect(week.locator("[data-card-id]")).toHaveText(["Planeada", "Otra"]);
+    await expect(week.locator("header")).toContainText("2");
+    await page.reload();
+    await expect(week.locator("[data-card-id]")).toHaveText(["Planeada", "Otra"]);
+  });
+
+  test("the move popover offers the four lists", async ({ page, bitacora }) => {
+    await bitacora.seed([{ title: "Viajera", list: "pendiente" }]);
+    await bitacora.open();
+    await bitacora.card("Viajera").click();
+
+    await dialog(page).getByRole("button", { name: "Pendiente" }).click();
+    await expect(page.getByLabel("Lista").locator("option")).toHaveText([
+      "Pendiente (actual)",
+      "Esta semana",
+      "En curso",
+      "Hecho",
+    ]);
+    await page.getByLabel("Lista").selectOption("esta_semana");
+    await page.getByRole("button", { name: "Mover", exact: true }).last().click();
+
+    await expect(bitacora.list("Esta semana").locator("[data-card-id]")).toHaveText(["Viajera"]);
+    await expect.poll(async () => (await bitacora.board()).cards[0]?.list).toBe("esta_semana");
+  });
 });
 
 test("Escape cancels a drag and the card stays where it was", async ({ page, bitacora }) => {

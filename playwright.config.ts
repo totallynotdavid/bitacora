@@ -17,8 +17,9 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    // A fresh local D1 on every run: `predev` migrates the empty state directory.
-    command: `rm -rf ${state} && bun run dev --port ${port} --strictPort`,
+    // A fresh local D1 on every run. The built app is served, so a page load is a few
+    // requests instead of one per source module.
+    command: `rm -rf ${state} && bun scripts/prepare-dev.ts && vite build && vite preview --port ${port} --strictPort`,
     env: { BITACORA_STATE: state },
     url: `http://localhost:${port}/login`,
     reuseExistingServer: false,
