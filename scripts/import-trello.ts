@@ -7,7 +7,7 @@ import { mapTrelloExport, ownerKeyOf, toSql, type Owner } from "../src/import/tr
 import { FIRST_ADMIN_ID } from "../src/worker/db/first-admin";
 import { targetArgs } from "./d1";
 
-const USAGE = "Usage: bun run import:trello <export.json> [--email <email>] [--apply local|remote]";
+const USAGE = "Usage: mise run import:trello <export.json> [--email <email>] [--apply local|remote]";
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,

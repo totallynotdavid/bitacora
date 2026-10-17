@@ -72,7 +72,7 @@ export function clientFor(cookie: string) {
 
 export type Client = ReturnType<typeof clientFor>;
 
-/** Claims the first admin the way `bun run claim-admin` does and signs in. */
+/** Claims the first admin the way `mise run claim-admin` does and signs in. */
 export async function admin(): Promise<Client> {
   await env.DB.exec(
     claimAdminSql({ email: ADMIN.email, name: ADMIN.name, passwordHash: await hashPassword(ADMIN.password) }),

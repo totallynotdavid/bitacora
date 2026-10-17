@@ -5,7 +5,7 @@ import { hashPassword } from "../src/worker/password";
 import { MIN_PASSWORD } from "../src/shared/model";
 import { executeSql } from "./d1";
 
-const USAGE = "Usage: bun run claim-admin -- --email <email> --name <name> [--remote]";
+const USAGE = "Usage: mise run claim-admin -- --email <email> --name <name> [--remote]";
 
 const { values } = parseArgs({
   options: {
