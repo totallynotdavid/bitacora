@@ -72,18 +72,21 @@ function luminance({ l, c, h }: Color): number {
   const l3 = (l + 0.3963377774 * a + 0.2158037573 * b) ** 3;
   const m3 = (l - 0.1055613458 * a - 0.0638541728 * b) ** 3;
   const s3 = (l - 0.0894841775 * a - 1.291485548 * b) ** 3;
-  const channel = (value: number) => Math.min(1, Math.max(0, value));
   const r = channel(4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3);
   const g = channel(-1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3);
   const blue = channel(-0.0041960863 * l3 - 0.7034186147 * m3 + 1.707614701 * s3);
   return 0.2126 * r + 0.7152 * g + 0.0722 * blue;
 }
 
+function channel(value: number): number {
+  return Math.min(1, Math.max(0, value));
+}
+
 function contrast(foreground: string, background: string, theme: Theme): number {
   const front = resolve(`var(${foreground})`, theme);
   const back = resolve(`var(${background})`, theme);
   const frontLuminance = luminance(front) * front.alpha + luminance(back) * (1 - front.alpha);
-  const [lighter, darker] = [frontLuminance, luminance(back)].sort((x, y) => y - x);
+  const [lighter, darker] = [frontLuminance, luminance(back)].toSorted((x, y) => y - x);
   return (lighter! + 0.05) / (darker! + 0.05);
 }
 
