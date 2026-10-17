@@ -8,14 +8,16 @@ database.
 
 ## Run it
 
-Needs [Bun](https://bun.sh). `mise.toml` pins the version.
+Needs [mise](https://mise.jdx.dev). `mise.toml` pins Bun, Node and the other
+tools.
 
 ```sh
-bun install
-bun run dev
+mise install
+mise run install
+mise run dev
 ```
 
-`bun run dev` creates `.dev.vars` from `.dev.vars.example` on the first run,
+`mise run dev` creates `.dev.vars` from `.dev.vars.example` on the first run,
 applies the migrations to the local D1 database and serves the app at
 <http://localhost:5173>. Sign in with `dev@bitacora.test` and the password
 `bitacora-dev`.
@@ -97,17 +99,17 @@ Migrations are SQL files in `drizzle/`. After a change to
 `src/worker/db/schema.ts`, generate the next one, then apply it:
 
 ```sh
-bun run db:generate
-bun run db:migrate:local
-bun run db:migrate:remote
+mise run db:generate
+mise run db:migrate:local
+mise run db:migrate:remote
 ```
 
 ## Import from Trello
 
 ```sh
-bun run import:trello export.json                 # print the SQL
-bun run import:trello export.json --apply local   # write it to the local D1
-bun run import:trello export.json --apply remote  # write it to the deployed D1
+mise run import:trello export.json                 # print the SQL
+mise run import:trello export.json --apply local   # write it to the local D1
+mise run import:trello export.json --apply remote  # write it to the deployed D1
 ```
 
 The cards go to the first admin. `--email <email>` sends them to the account
@@ -147,8 +149,8 @@ You need a Cloudflare account. The free plan is enough.
 3. Apply the migrations and deploy:
 
    ```sh
-   bun run db:migrate:remote
-   bun run deploy
+   mise run db:migrate:remote
+   mise run deploy
    ```
 
 4. Set the signing key. The command asks for the value (see Secrets):
@@ -162,7 +164,7 @@ You need a Cloudflare account. The free plan is enough.
    password twice:
 
    ```sh
-   bun run claim-admin -- --remote --email you@example.com --name "Your Name"
+   mise run claim-admin -- --remote --email you@example.com --name "Your Name"
    ```
 
    It works once. When the account already has a password it prints "The first
@@ -183,14 +185,15 @@ link, under the first admin. Run steps 3 to 5. If the Worker still has an
 ## Develop
 
 ```sh
-bun run check      # format, lint, types, Worker tests and browser tests
-bun run test       # the Worker tests alone
-bun run test:e2e   # the browser tests alone
+mise run check     # lint, secrets scan, types, Worker tests and build
+mise run fix       # safe lint fixes and the formatter
+mise run test      # the Worker tests alone
+mise run test:e2e  # the browser tests alone
 ```
 
-The browser tests need Chromium (`bunx playwright install chromium`). They build
-the app and serve it with `vite preview` on a port and a D1 state of their own,
-which they delete first.
+The browser tests need Chromium (`mise run install:browsers`). They build the
+app and serve it with `vite preview` on a port and a D1 state of their own,
+which they delete first. `check` leaves them out; the `e2e` workflow runs them.
 
 The code map and the rules the code keeps are in
 [docs/architecture.md](docs/architecture.md). The color, type, space and motion
