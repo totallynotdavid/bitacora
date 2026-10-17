@@ -53,6 +53,7 @@ export function Composer({ container }: { container: string }) {
     >
       <textarea
         className={styles.input}
+        data-elevation="raised"
         autoFocus
         rows={3}
         value={text}
@@ -71,7 +72,7 @@ export function Composer({ container }: { container: string }) {
           Añadir tarjeta
         </button>
         <button type="button" className={styles.cancel} onClick={close} aria-label="Cerrar">
-          <X size={18} />
+          <X size={16} aria-hidden />
         </button>
       </div>
     </form>

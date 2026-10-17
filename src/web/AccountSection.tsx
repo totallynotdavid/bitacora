@@ -46,7 +46,11 @@ function NameForm(props: { settings: Settings; onChange: (settings: Settings) =>
           Guardar nombre
         </button>
         {saved && <span role="status">Nombre guardado.</span>}
-        {failed && <span role="alert">No se pudo guardar el nombre.</span>}
+        {failed && (
+          <span className={form.error} role="alert">
+            No se pudo guardar el nombre.
+          </span>
+        )}
       </div>
     </form>
   );

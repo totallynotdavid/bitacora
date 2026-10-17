@@ -11,12 +11,12 @@
 
 .stack[data-dragging="true"]:empty {
   display: flex;
-  min-height: 40px;
+  min-height: var(--control);
   margin: var(--space-1);
-  border-radius: var(--radius-card);
-  background: var(--hover);
+  border-radius: var(--radius-md);
+  background: var(--placeholder);
 }
 
 .stack[data-over="true"] {
-  background: rgb(24 104 219 / 0.16);
+  background: var(--accent-wash);
 }

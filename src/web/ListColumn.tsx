@@ -12,14 +12,33 @@ import type { useOpenDays } from "./useOpenDays";
 type Shared = {
   cards: Card[];
   dragging: boolean;
+  /** True when an empty list means the filter matched nothing. */
+  filtering: boolean;
+  /** The list displayed by the narrow layout. */
+  current: ListId;
 };
 
-function Column(props: { list: ListId; count: number; composer?: string; children: ReactNode }) {
+const EMPTY: Record<ListId, string> = {
+  pendiente: "Aquí van las ideas sin fecha.",
+  esta_semana: "Elige lo que harás esta semana.",
+  en_curso: "Nada en curso por ahora.",
+  hecho: "Lo que termines aparece aquí.",
+};
+
+function Column(props: {
+  list: ListId;
+  current: ListId;
+  count: number;
+  composer?: string;
+  children: ReactNode;
+}) {
   return (
     <section
+      id={`list-${props.list}`}
       className={styles.column}
       data-list={props.list}
       data-composer={props.composer}
+      data-hidden={props.list !== props.current}
       aria-label={LIST_TITLES[props.list]}
     >
       <header className={styles.header}>
@@ -31,13 +50,19 @@ function Column(props: { list: ListId; count: number; composer?: string; childre
   );
 }
 
+/** Describes an empty list above its composer. */
+function Empty(props: { list: ListId; filtering: boolean }) {
+  return <p className={styles.empty}>{props.filtering ? "Sin coincidencias" : EMPTY[props.list]}</p>;
+}
+
 /** A list whose cards sit in one stack: Pendiente, Esta semana or En curso. */
 export function FlatColumn(props: Shared & { list: Exclude<ListId, "hecho"> }) {
   const container: Container = { list: props.list, doneDate: null };
   const cards = inContainer(props.cards, container);
   return (
-    <Column list={props.list} count={cards.length} composer={props.list}>
+    <Column list={props.list} current={props.current} count={cards.length} composer={props.list}>
       <div className={styles.body}>
+        {cards.length === 0 && !props.dragging && <Empty list={props.list} filtering={props.filtering} />}
         <CardStack container={container} cards={cards} dragging={props.dragging} />
       </div>
       <footer className={styles.footer}>
@@ -109,13 +134,12 @@ export function DoneColumn(
   const shown = props.dragging && !days.includes(props.today) ? [props.today, ...days] : days;
   const todayId = containerId({ list: "hecho", doneDate: props.today });
 
+  const total = props.cards.filter((card) => card.list === "hecho").length;
+
   return (
-    <Column
-      list="hecho"
-      count={props.cards.filter((card) => card.list === "hecho").length}
-      composer={todayId}
-    >
+    <Column list="hecho" current={props.current} count={total} composer={todayId}>
       <div className={styles.body}>
+        {total === 0 && !props.dragging && <Empty list="hecho" filtering={props.filtering} />}
         {shown.map((date) => (
           <DayGroup
             key={date}

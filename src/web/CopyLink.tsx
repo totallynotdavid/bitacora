@@ -26,7 +26,7 @@ export function CopyLink(props: { id: string; label: string; value: string; disa
           onFocus={(event) => event.currentTarget.select()}
         />
         <button type="button" className={form.secondary} onClick={copy} disabled={props.disabled}>
-          {copied ? <Check size={14} aria-hidden /> : <Copy size={14} aria-hidden />}{" "}
+          {copied ? <Check size={16} aria-hidden /> : <Copy size={16} aria-hidden />}{" "}
           {copied ? "Copiado" : "Copiar"}
         </button>
       </div>

@@ -3,7 +3,6 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import styles from "./Popover.module.css";
 import { useEscape } from "./useEscape";
 
-const WIDTH = 304;
 const MARGIN = 8;
 
 /** A small panel under `anchor`. Escape, the close button or a click elsewhere closes it. */
@@ -20,7 +19,8 @@ export function Popover(props: {
   useLayoutEffect(() => {
     const anchor = props.anchor.getBoundingClientRect();
     const height = ref.current?.offsetHeight ?? 0;
-    const left = Math.min(Math.max(MARGIN, anchor.left), innerWidth - WIDTH - MARGIN);
+    const width = ref.current?.offsetWidth ?? 0;
+    const left = Math.min(Math.max(MARGIN, anchor.left), innerWidth - width - MARGIN);
     const below = anchor.bottom + 4;
     const top = below + height > innerHeight - MARGIN ? Math.max(MARGIN, anchor.top - height - 4) : below;
     setPlace({ left, top });
@@ -39,6 +39,7 @@ export function Popover(props: {
     <div
       ref={ref}
       className={styles.popover}
+      data-elevation="overlay"
       role="dialog"
       aria-label={props.title}
       style={{ left: place?.left, top: place?.top, visibility: place ? "visible" : "hidden" }}
@@ -46,7 +47,7 @@ export function Popover(props: {
       <header className={styles.header}>
         <h3 className={styles.title}>{props.title}</h3>
         <button type="button" className={styles.close} aria-label="Cerrar" onClick={props.onClose}>
-          <X size={16} />
+          <X size={16} aria-hidden />
         </button>
       </header>
       {props.children}

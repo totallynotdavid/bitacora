@@ -1,6 +1,8 @@
 import { DndContext, DragOverlay } from "@dnd-kit/core";
-import { Filter as FilterIcon, Keyboard, LogOut, Settings, X } from "lucide-react";
+import { Filter as FilterIcon, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { LISTS, LIST_TITLES, type ListId, type Settings } from "../shared/model";
+import { api } from "./api";
 import styles from "./Board.module.css";
 import { CardBack } from "./CardBack";
 import { CardFace } from "./CardView";
@@ -12,6 +14,7 @@ import { SettingsDialog } from "./SettingsDialog";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 import { Toasts } from "./Toasts";
 import { UiContext, type Ui } from "./ui";
+import { UserMenu } from "./UserMenu";
 import { useBoard } from "./useBoard";
 import { useCardRoute } from "./useCardRoute";
 import { dragAnnouncements, useCardDrag } from "./useCardDrag";
@@ -40,8 +43,15 @@ export function Board() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [me, setMe] = useState<Settings | null>(null);
+  // The narrow layout shows one list at a time.
+  const [tab, setTab] = useState<ListId>("en_curso");
   const filterButton = useRef<HTMLButtonElement>(null);
   const hover = useRef<{ card: string | null; composer: string | null }>({ card: null, composer: null });
+
+  useEffect(() => {
+    api.settings().then(setMe, console.error);
+  }, []);
 
   const shown = useMemo(() => board.cards.filter((card) => matches(card, filter)), [board.cards, filter]);
   const drag = useCardDrag(shown, board.move);
@@ -131,7 +141,7 @@ export function Board() {
   });
 
   const dragged = drag.dragging && drag.cards.find((card) => card.id === drag.dragging?.id);
-  const shared = { cards: drag.cards, dragging: drag.dragging !== null };
+  const shared = { cards: drag.cards, dragging: drag.dragging !== null, filtering, current: tab };
 
   return (
     <StripeNamesContext.Provider value={stripeNames}>
@@ -148,21 +158,8 @@ export function Board() {
           onMouseLeave={() => (hover.current = { card: null, composer: null })}
         >
           <header className={styles.header}>
-            <h1 className={styles.title}>Bitácora</h1>
             <div className={styles.tools}>
-              {filtering && (
-                <span className={styles.matches} role="status">
-                  {shown.length} {shown.length === 1 ? "tarjeta coincide" : "tarjetas coinciden"}
-                  <button
-                    type="button"
-                    className={styles.clear}
-                    aria-label="Limpiar filtro"
-                    onClick={clearFilter}
-                  >
-                    <X size={14} aria-hidden />
-                  </button>
-                </span>
-              )}
+              <h1 className={styles.title}>Bitácora</h1>
               <button
                 ref={filterButton}
                 type="button"
@@ -173,24 +170,46 @@ export function Board() {
               >
                 <FilterIcon size={16} aria-hidden /> Filtrar
               </button>
-              <button type="button" className={styles.tool} onClick={() => setSettingsOpen(true)}>
-                <Settings size={16} aria-hidden /> Ajustes
-              </button>
-              <button
-                type="button"
-                className={styles.tool}
-                aria-label="Atajos de teclado"
-                onClick={() => setHelpOpen(true)}
-              >
-                <Keyboard size={16} aria-hidden />
-              </button>
-              <form method="post" action="/logout">
-                <button type="submit" className={styles.tool}>
-                  <LogOut size={16} aria-hidden /> Salir
-                </button>
-              </form>
+              {filtering && (
+                <span className={styles.matches} role="status">
+                  {shown.length} {shown.length === 1 ? "tarjeta coincide" : "tarjetas coinciden"}
+                  <button
+                    type="button"
+                    className={styles.clear}
+                    aria-label="Limpiar filtro"
+                    onClick={clearFilter}
+                  >
+                    <X size={16} aria-hidden />
+                  </button>
+                </span>
+              )}
             </div>
+            <UserMenu
+              name={me?.name ?? null}
+              onSettings={() => setSettingsOpen(true)}
+              onShortcuts={() => setHelpOpen(true)}
+            />
           </header>
+
+          <nav className={styles.tabs} role="tablist" aria-label="Listas">
+            {LISTS.map((list) => (
+              <button
+                key={list}
+                type="button"
+                role="tab"
+                id={`tab-${list}`}
+                className={styles.tab}
+                aria-selected={tab === list}
+                aria-controls={`list-${list}`}
+                onClick={() => setTab(list)}
+              >
+                {LIST_TITLES[list]}
+                <span className={styles.tabCount}>
+                  {drag.cards.filter((card) => card.list === list).length}
+                </span>
+              </button>
+            ))}
+          </nav>
 
           {board.loadError && (
             <div className={styles.error} role="alert">
@@ -278,7 +297,9 @@ export function Board() {
           />
         )}
 
-        {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
+        {settingsOpen && me && (
+          <SettingsDialog settings={me} onChange={setMe} onClose={() => setSettingsOpen(false)} />
+        )}
         {helpOpen && <ShortcutsDialog onClose={() => setHelpOpen(false)} />}
         <Toasts toasts={board.toasts} onClose={board.closeToast} />
       </UiContext.Provider>

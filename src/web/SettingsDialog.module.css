@@ -8,11 +8,10 @@
 }
 
 .heading {
-  margin: 0 0 var(--space-3);
-  font-size: var(--text-size);
-  line-height: var(--text-leading);
-  font-weight: 650;
-  color: var(--heading);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-base);
+  line-height: var(--leading);
+  font-weight: var(--weight-strong);
 }
 
 .linkRow {
@@ -21,24 +20,17 @@
 }
 
 .linkRow > button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   flex: none;
-  height: 36px;
 }
 
 .hint {
-  margin: 4px 0 0;
-  color: var(--text-subtle);
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
 }
 
 .anchor {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  line-height: 32px;
-  color: var(--text);
+  color: inherit;
   text-decoration: none;
 }
 
@@ -57,7 +49,7 @@
 }
 
 .members {
-  margin: var(--space-3) 0 0;
+  margin-top: var(--space-3);
   padding: 0;
   list-style: none;
 }

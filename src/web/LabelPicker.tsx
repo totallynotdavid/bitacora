@@ -1,6 +1,6 @@
 import { Check, Pencil, Plus } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { LABEL_COLOR_NAMES, LABEL_COLORS, LABEL_STYLES, type LabelColor } from "../shared/model";
+import { LABEL_COLOR_NAMES, LABEL_COLORS, labelStyle, type LabelColor } from "../shared/model";
 import styles from "./LabelPicker.module.css";
 import picker from "./Pickers.module.css";
 import { useUi } from "./ui";
@@ -26,10 +26,7 @@ export function LabelPicker(props: { value: string | null; onPick: (id: string |
             <button
               type="button"
               className={styles.label}
-              style={{
-                background: LABEL_STYLES[label.color].background,
-                color: LABEL_STYLES[label.color].text,
-              }}
+              style={labelStyle(label.color)}
               onClick={() => props.onPick(label.id)}
             >
               {label.name}
@@ -41,7 +38,7 @@ export function LabelPicker(props: { value: string | null; onPick: (id: string |
               aria-label={`Editar etiqueta ${label.name}`}
               onClick={() => setDraft({ id: label.id, name: label.name, color: label.color })}
             >
-              <Pencil size={14} aria-hidden />
+              <Pencil size={16} aria-hidden />
             </button>
           </li>
         ))}
@@ -54,7 +51,7 @@ export function LabelPicker(props: { value: string | null; onPick: (id: string |
       </ul>
       <div className={picker.actions}>
         <button type="button" className={picker.button} onClick={() => setDraft(NEW_LABEL)}>
-          <Plus size={14} aria-hidden /> Crear etiqueta
+          <Plus size={16} aria-hidden /> Crear etiqueta
         </button>
       </div>
     </>
@@ -115,11 +112,7 @@ function LabelForm(props: {
       <fieldset className={styles.colors}>
         <legend className={picker.label}>Color</legend>
         {LABEL_COLORS.map((option) => (
-          <label
-            key={option}
-            className={styles.swatch}
-            style={{ background: LABEL_STYLES[option].background, color: LABEL_STYLES[option].text }}
-          >
+          <label key={option} className={styles.swatch} style={labelStyle(option)}>
             <input
               type="radio"
               name="label-color"

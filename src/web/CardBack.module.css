@@ -1,15 +1,14 @@
 .dialog {
-  width: min(640px, calc(100vw - 24px));
-  max-height: calc(100dvh - 96px);
-  margin: 48px auto auto;
+  width: min(var(--dialog-width), 100vw - var(--space-6));
+  max-height: calc(100dvh - var(--space-12) * 2);
+  margin: var(--space-12) auto auto;
   padding: 0;
   overflow-y: auto;
   border: 0;
-  border-radius: var(--radius-list);
-  background: var(--surface);
+  border-radius: var(--radius-lg);
+  background: var(--overlay);
   color: var(--text);
-  box-shadow: var(--shadow-raised);
-  animation: appear var(--motion-slow) ease-out;
+  animation: appear var(--duration-slow) var(--ease-out);
 }
 
 .dialog::backdrop {
@@ -19,7 +18,7 @@
 @keyframes appear {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: scale(0.97);
   }
 }
 
@@ -27,169 +26,123 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
-  padding: 0 12px 0 20px;
+  min-height: var(--header-height);
+  padding: 0 var(--space-3) 0 var(--space-6);
 }
 
 .list {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 4px;
-  border: 0;
-  border-radius: var(--radius-chip);
-  background: rgb(5 21 36 / 0.06);
-  font-weight: 500;
-  transition: background-color var(--motion-fast) ease-out;
-}
-
-.list:hover {
-  background: var(--neutral-hover);
-}
-
-.list:active {
-  background: var(--neutral-pressed);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--chip);
+  font-weight: var(--weight-strong);
 }
 
 .barActions {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .icon {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: var(--icon-button);
+  height: var(--icon-button);
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: transparent;
-  color: var(--text-subtle);
-  transition: background-color var(--motion-fast) ease-out;
-}
-
-.icon:hover {
-  background: var(--subtle-hover);
+  color: var(--text-muted);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
 .icon:active {
-  background: var(--subtle-pressed);
+  background: var(--pressed);
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .icon:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
 }
 
 .body {
-  padding: 24px 20px 16px;
+  padding: var(--space-4) var(--space-6) var(--space-6);
 }
 
 .titleRow {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .title {
   display: block;
   flex: 1;
   min-width: 0;
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   border: 0;
-  border-radius: var(--radius-chip);
+  border-radius: var(--radius-sm);
   background: transparent;
-  font-size: 28px;
-  line-height: 32px;
-  font-weight: 650;
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+  font-weight: var(--weight-strong);
   resize: none;
   overflow: hidden;
-  transition:
-    background-color var(--motion-fast) ease-out,
-    box-shadow var(--motion-fast) ease-out;
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
-.title:focus {
-  background: var(--surface);
-  outline: none;
-  box-shadow: inset 0 0 0 2px var(--focus);
+.title:focus-visible {
+  background: var(--field-background);
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
 }
 
 .buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 .outlined {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 32px;
-  padding: 4px 8px;
-  border: 1px solid var(--outline);
-  border-radius: var(--radius-button);
-  background: transparent;
-  font-weight: 500;
-  color: var(--text-subtle);
-  transition:
-    background-color var(--motion-fast) ease-out,
-    border-color var(--motion-fast) ease-out,
-    box-shadow var(--motion-fast) ease-out;
-}
-
-.outlined:hover {
-  background: var(--subtle-hover);
-}
-
-.outlined:active {
-  background: var(--subtle-pressed);
+  composes: secondary from "./form.module.css";
 }
 
 .fields {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 16px;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .label {
   display: block;
-  margin-bottom: 4px;
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 600;
-  color: var(--text-subtle);
-}
-
-.chip,
-.labelChip {
-  display: inline-flex;
-  align-items: center;
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: var(--radius-chip);
-  font-weight: 500;
-  transition:
-    background-color var(--motion-fast) ease-out,
-    filter var(--motion-fast) ease-out;
+  margin-bottom: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: var(--leading);
+  font-weight: var(--weight-strong);
+  color: var(--text-muted);
 }
 
 .chip {
-  background: var(--button);
+  composes: secondary from "./form.module.css";
 }
 
-.chip:hover {
-  background: var(--neutral-hover);
+.labelChip {
+  composes: secondary from "./form.module.css";
 }
 
-.chip:active {
-  background: var(--neutral-pressed);
+@media (hover: hover) and (pointer: fine) {
+  .labelChip:hover {
+    filter: brightness(0.94);
+  }
 }
 
-.labelChip:hover {
-  filter: brightness(0.94);
-}
-
-@media (max-width: 767px) {
+@media (max-width: 47.99rem) {
   .dialog {
     width: 100vw;
     max-width: none;
@@ -199,7 +152,11 @@
     border-radius: 0;
   }
 
+  .bar {
+    padding-left: var(--space-4);
+  }
+
   .body {
-    padding-inline: 16px;
+    padding-inline: var(--space-4);
   }
 }

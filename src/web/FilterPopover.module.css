@@ -1,36 +1,14 @@
 .label {
+  composes: label from "./form.module.css";
   display: block;
-  margin: 8px 0 4px;
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 600;
-  color: var(--text-subtle);
+  margin: var(--space-2) 0 var(--space-1);
 }
 
 .input {
-  width: 100%;
-  height: 36px;
-  padding: 6px 10px;
-  border: 1px solid rgb(9 30 66 / 0.25);
-  border-radius: var(--radius-button);
-  background: var(--surface);
+  composes: input from "./form.module.css";
 }
 
 .clear {
-  height: 32px;
-  margin-top: 12px;
-  padding: 6px 12px;
-  border: 0;
-  border-radius: var(--radius-button);
-  background: var(--button);
-  font-weight: 500;
-  transition: background-color var(--motion-fast) ease-out;
-}
-
-.clear:hover {
-  background: var(--neutral-hover);
-}
-
-.clear:active {
-  background: var(--neutral-pressed);
+  composes: secondary from "./form.module.css";
+  margin-top: var(--space-3);
 }

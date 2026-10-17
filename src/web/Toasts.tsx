@@ -26,7 +26,7 @@ export function Toasts(props: { toasts: Toast[]; onClose: (id: number) => void }
             aria-label="Cerrar aviso"
             onClick={() => props.onClose(toast.id)}
           >
-            <X size={16} />
+            <X size={16} aria-hidden />
           </button>
         </div>
       ))}

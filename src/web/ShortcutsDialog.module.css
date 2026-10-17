@@ -1,6 +1,6 @@
 .note {
-  margin: 0 0 12px;
-  color: var(--text-subtle);
+  margin-bottom: var(--space-3);
+  color: var(--text-muted);
 }
 
 .table {
@@ -10,23 +10,23 @@
 
 .table th,
 .table td {
-  padding: 6px 0;
+  padding: var(--space-2) 0;
   border-top: 1px solid var(--border);
   text-align: left;
   vertical-align: top;
 }
 
 .table th {
-  width: 72px;
+  width: 4.5rem;
 }
 
 .key {
   display: inline-block;
-  min-width: 28px;
-  padding: 0 8px;
-  border-radius: var(--radius-chip);
-  background: var(--button);
+  min-width: 1.75rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--chip);
   font: inherit;
-  font-weight: 600;
+  font-weight: var(--weight-strong);
   text-align: center;
 }

@@ -38,6 +38,7 @@ export function Dialog(props: { title: string; onClose: () => void; wide?: boole
     <dialog
       {...modal.props}
       className={styles.dialog}
+      data-elevation="modal"
       data-wide={props.wide}
       aria-labelledby={titleId}
       onClose={props.onClose}
@@ -48,7 +49,7 @@ export function Dialog(props: { title: string; onClose: () => void; wide?: boole
             {props.title}
           </h2>
           <button type="button" className={styles.close} aria-label="Cerrar" onClick={modal.close}>
-            <X size={18} />
+            <X size={16} aria-hidden />
           </button>
         </header>
         {props.children}

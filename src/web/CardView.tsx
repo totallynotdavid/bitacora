@@ -2,7 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { AlignLeft, Check, ListChecks, Pencil } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
-import { LABEL_STYLES, type Card } from "../shared/model";
+import { labelStyle, type Card } from "../shared/model";
 import styles from "./CardView.module.css";
 import { useUi } from "./ui";
 import { useStripeNames } from "./useStripeNames";
@@ -66,18 +66,20 @@ export function CardFace({
   const { labels } = useUi();
   const label = labels.find((known) => known.id === card.labelId);
   const checked = card.checklist.filter((item) => item.done).length;
-  const hasBadges = card.requester || card.checklist.length > 0 || card.description;
+  const hasDescription = card.description.trim() !== "";
+  const hasBadges = card.requester || card.checklist.length > 0 || hasDescription;
   const done = card.list === "hecho";
 
   return (
     <div
       className={styles.face}
       data-lifted={lifted}
+      data-elevation={lifted ? "overlay" : "raised"}
       style={
         label
           ? ({
-              "--stripe": LABEL_STYLES[label.color].background,
-              "--stripe-text": LABEL_STYLES[label.color].text,
+              "--stripe": labelStyle(label.color).background,
+              "--stripe-text": labelStyle(label.color).color,
             } as CSSProperties)
           : undefined
       }
@@ -106,10 +108,10 @@ export function CardFace({
       {hasBadges && (
         <div className={styles.badges}>
           {card.requester && <span className={styles.chip}>{card.requester}</span>}
-          {card.description && <AlignLeft size={14} aria-label="Tiene descripción" />}
+          {hasDescription && <AlignLeft size={16} aria-label="Tiene descripción" />}
           {card.checklist.length > 0 && (
             <span className={styles.badge} data-complete={checked === card.checklist.length}>
-              <ListChecks size={14} aria-hidden />
+              <ListChecks size={16} aria-hidden />
               {checked}/{card.checklist.length}
             </span>
           )}
@@ -157,7 +159,7 @@ export function SortableCard({ card }: { card: Card }) {
           ui.quickEdit(card.id);
         }}
       >
-        <Pencil size={14} aria-hidden />
+        <Pencil size={16} aria-hidden />
       </button>
     </div>
   );

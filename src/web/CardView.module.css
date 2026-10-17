@@ -1,22 +1,13 @@
 .sortable {
   position: relative;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-md);
   touch-action: manipulation;
   cursor: pointer;
-}
-
-.sortable:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
 }
 
 /* The slot a lifted card will drop into: a gray block as tall as the card. */
 .sortable[data-dragging="true"] {
   background: var(--placeholder);
-}
-
-.sortable[data-dragging="true"] .face {
-  box-shadow: none;
 }
 
 .sortable[data-dragging="true"] > * {
@@ -25,66 +16,69 @@
 
 .face {
   position: relative;
-  padding: 8px 12px 4px;
-  background: var(--surface);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow);
-  transition: background-color var(--motion-fast) ease-out;
+  padding: var(--space-2) var(--space-3);
+  background: var(--card);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
-.sortable:hover .face {
-  background: rgb(250 251 252);
+@media (hover: hover) and (pointer: fine) {
+  .sortable:hover .face {
+    background: var(--card-hover);
+  }
 }
 
 /* The card that follows the pointer. */
 .face[data-lifted="true"] {
   transform: rotate(4deg);
-  box-shadow:
-    0 8px 12px #091e4226,
-    0 0 1px #091e424f;
   cursor: grabbing;
 }
 
+/* The visible bar is 8px. The button around it is 24px, the smallest target. */
 .stripe,
 .pill {
   display: block;
-  margin: 0 0 4px;
   padding: 0;
   border: 0;
-  background: var(--stripe);
+  background: transparent;
 }
 
 .stripe {
-  width: 40px;
-  height: 8px;
-  border-radius: var(--radius-chip);
+  width: 2.5rem;
+  height: 1.5rem;
+  margin: calc(var(--space-2) * -1) 0 calc(var(--space-1) * -1);
+  padding: var(--space-2) 0;
+  background: var(--stripe);
+  background-clip: content-box;
+  border-radius: var(--radius-sm);
 }
 
 .pill {
   max-width: 100%;
-  padding: 0 8px;
-  border-radius: var(--radius-chip);
-  font-size: 12px;
-  line-height: 20px;
-  font-weight: 600;
+  margin-bottom: var(--space-1);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--stripe);
+  font-size: var(--text-xs);
+  min-height: 1.5rem;
+  font-weight: var(--weight-strong);
   color: var(--stripe-text);
   text-align: left;
 }
 
-.stripe:hover,
-.pill:hover {
-  filter: brightness(0.92);
+@media (hover: hover) and (pointer: fine) {
+  .pill:hover {
+    filter: brightness(0.92);
+  }
 }
 
 .titleRow {
   position: relative;
-  margin-bottom: 4px;
 }
 
 .title {
-  padding-right: 22px;
+  padding-right: var(--space-6);
   overflow-wrap: anywhere;
-  transition: transform 0.3s ease-in;
 }
 
 /* The completion circle fades in while the title slides right to make room. */
@@ -94,109 +88,140 @@
   left: 0;
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  width: 1.5rem;
+  height: 1.5rem;
   padding: 0;
-  border: 2px solid var(--neutral-pressed);
-  border-radius: 6px;
+  border: 2px solid var(--border-control);
+  border-radius: var(--radius-sm);
   background: transparent;
   color: transparent;
   opacity: 0;
   transition:
-    opacity 0.3s ease-in,
-    background-color var(--motion-fast) ease-out;
+    opacity var(--duration) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
 }
 
-.complete:hover {
-  background: var(--subtle-hover);
-}
+@media (hover: hover) and (pointer: fine) {
+  .complete:hover {
+    background: var(--hover);
+  }
 
-.sortable:hover .complete,
-.sortable:focus-within .complete {
-  opacity: 1;
-}
+  .title {
+    transition: transform var(--duration) var(--ease-out);
+  }
 
-.sortable:hover .title,
-.sortable:focus-within .title,
-.titleRow[data-done="true"] .title {
-  transform: translateX(22px);
+  .sortable:hover .complete,
+  .sortable:focus-within .complete {
+    opacity: 1;
+  }
+
+  .sortable:hover .title,
+  .sortable:focus-within .title {
+    transform: translateX(calc(var(--space-6) + var(--space-1)));
+  }
+
+  .sortable:hover .edit,
+  .sortable:focus-within .edit {
+    opacity: 1;
+  }
 }
 
 /* A finished card shows its check in the circle's place, always. */
+.titleRow[data-done="true"] .title {
+  transform: translateX(calc(var(--space-6) + var(--space-1)));
+}
+
 .complete[data-done="true"] {
   border-color: transparent;
-  color: var(--success);
+  color: var(--text-success);
   opacity: 1;
 }
 
 .complete[data-size="back"] {
   position: static;
   flex: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: var(--icon-button);
+  height: var(--icon-button);
+  border-radius: var(--radius-full);
   opacity: 1;
+}
+
+/* Touch has no hover, so the card back carries these actions. A tap on the
+   card must open it, not hit a hidden control. */
+@media (hover: none), (pointer: coarse) {
+  .face .complete {
+    pointer-events: none;
+  }
+
+  .complete:not([data-done="true"], [data-size="back"]),
+  .edit {
+    display: none;
+  }
+
+  .titleRow[data-done="true"] .title {
+    transform: none;
+    padding-left: calc(var(--space-6) + var(--space-1));
+  }
 }
 
 .edit {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: var(--space-1);
+  right: var(--space-1);
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: var(--icon-button);
+  height: var(--icon-button);
   padding: 0;
   border: 0;
-  border-radius: 16px;
-  background: var(--surface);
-  color: var(--text-subtle);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--text-muted);
   opacity: 0;
   transition:
-    opacity var(--motion-fast) ease-out,
-    background-color var(--motion-fast) ease-out;
+    opacity var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
 }
 
-.sortable:hover .edit,
-.sortable:focus-within .edit {
+@media (hover: hover) and (pointer: fine) {
+  .edit:hover {
+    background: var(--card-hover);
+    color: var(--text);
+  }
+}
+
+.edit:focus-visible {
   opacity: 1;
-}
-
-.edit:hover {
-  background: #f1f2f4;
-}
-
-.edit:active {
-  background: #dcdfe4;
 }
 
 .badges {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  min-height: 24px;
-  margin-bottom: 4px;
-  color: var(--text-subtle);
+  gap: var(--space-2);
+  min-height: 1.5rem;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  gap: var(--space-1);
+  font-variant-numeric: tabular-nums;
 }
 
 .badge[data-complete="true"] {
-  color: var(--success);
+  color: var(--text-success);
 }
 
 .chip {
-  padding: 0 8px;
-  border-radius: var(--radius-chip);
-  background: rgb(9 30 66 / 0.08);
-  font-size: 12px;
-  line-height: 20px;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.25rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--chip);
+  font-weight: var(--weight-strong);
   color: var(--text);
 }

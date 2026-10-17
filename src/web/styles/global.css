@@ -4,18 +4,33 @@
   box-sizing: border-box;
 }
 
-html,
-body,
-#root {
-  height: 100%;
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  margin: 0;
-  font: var(--text-size) / var(--text-leading) var(--font);
+  min-height: 100dvh;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
   color: var(--text);
-  background: var(--board-background);
-  background-attachment: fixed;
+  background: var(--board);
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
 }
 
 button,
@@ -24,10 +39,42 @@ select,
 textarea {
   font: inherit;
   color: inherit;
+  letter-spacing: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4 {
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 button {
+  padding: 0;
   cursor: pointer;
+}
+
+strong,
+b {
+  font-weight: var(--weight-strong);
+}
+
+/* The app's stacking context keeps its layer numbers local to the app. */
+#root {
+  isolation: isolate;
+  min-height: 100dvh;
 }
 
 html[data-dragging="true"],

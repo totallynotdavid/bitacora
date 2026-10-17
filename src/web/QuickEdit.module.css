@@ -1,9 +1,9 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 20;
-  background: var(--dim);
-  animation: fade var(--motion-fast) ease-out;
+  z-index: var(--layer-overlay);
+  background: var(--scrim);
+  animation: fade var(--duration-fast) var(--ease-out);
 }
 
 @keyframes fade {
@@ -16,6 +16,7 @@
   position: absolute;
 }
 
+/* Keep the field at the card's text size so the title does not jump. */
 .field {
   display: block;
   width: 100%;
@@ -28,44 +29,40 @@
 }
 
 .save {
-  height: 32px;
-  margin-top: 8px;
-  padding: 6px 12px;
-  border: 0;
-  border-radius: var(--radius-button);
-  background: var(--link);
-  color: #fff;
-  font-weight: 500;
-  transition: background-color var(--motion-fast) ease-out;
-}
-
-.save:hover {
-  background: var(--primary-hover);
+  composes: primary from "./form.module.css";
+  margin-top: var(--space-2);
 }
 
 .menu {
   position: absolute;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  animation: fade var(--motion) ease-out;
+  gap: var(--space-1);
 }
 
 .action {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: fit-content;
-  height: 32px;
-  padding: 6px 12px;
+  min-height: var(--control);
+  padding: 0 var(--space-3);
   border: 0;
-  border-radius: var(--radius-button);
-  background: rgb(240 241 242);
+  border-radius: var(--radius-md);
+  background: var(--overlay);
   color: var(--text);
-  font-weight: 500;
-  transition: background-color var(--motion-fast) ease-out;
+  font-weight: var(--weight-strong);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
-.action:hover {
-  background: rgb(221 222 225);
+.action:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .action:hover {
+    background: var(--card-hover);
+  }
 }

@@ -1,26 +1,34 @@
 .row {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .label {
   display: flex;
   align-items: center;
   flex: 1;
-  gap: 8px;
+  gap: var(--space-2);
   min-width: 0;
-  height: 32px;
-  padding: 0 12px;
+  min-height: var(--control);
+  padding: 0 var(--space-3);
   border: 0;
-  border-radius: var(--radius-chip);
-  font-weight: 500;
+  border-radius: var(--radius-md);
+  font-weight: var(--weight-strong);
   text-align: left;
   overflow-wrap: anywhere;
-  transition: filter var(--motion-fast) ease-out;
+  transition:
+    filter var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
 }
 
-.label:hover {
-  filter: brightness(0.94);
+.label:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .label:hover {
+    filter: brightness(0.94);
+  }
 }
 
 .label > svg {
@@ -28,26 +36,17 @@
 }
 
 .edit {
-  display: grid;
-  place-items: center;
+  composes: ghost from "./form.module.css";
   flex: none;
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: var(--radius-chip);
-  background: transparent;
-  color: var(--text-subtle);
-  transition: background-color var(--motion-fast) ease-out;
-}
-
-.edit:hover {
-  background: var(--subtle-hover);
+  width: var(--control);
+  padding: 0;
+  color: var(--text-muted);
 }
 
 .colors {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
   margin: 0;
   padding: 0;
   border: 0;
@@ -57,18 +56,21 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 32px;
-  border-radius: var(--radius-chip);
+  width: 3rem;
+  height: var(--control);
+  border-radius: var(--radius-md);
   cursor: pointer;
+  transition: filter var(--duration-fast) var(--ease-out);
 }
 
-.swatch:hover {
-  filter: brightness(0.94);
+@media (hover: hover) and (pointer: fine) {
+  .swatch:hover {
+    filter: brightness(0.94);
+  }
 }
 
 .swatch:has(:focus-visible) {
-  outline: 2px solid var(--link);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -81,37 +83,17 @@
 }
 
 .remove {
+  composes: danger from "./form.module.css";
   margin-left: auto;
-  height: 32px;
-  padding: 6px 12px;
-  border: 0;
-  border-radius: var(--radius-button);
-  background: transparent;
-  color: var(--danger);
-  font-weight: 500;
-}
-
-.remove:hover {
-  background: rgb(174 46 36 / 0.1);
 }
 
 .confirm {
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: var(--radius-card);
-  background: rgb(174 46 36 / 0.08);
-}
-
-.confirm p {
-  margin: 0;
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--danger-wash);
 }
 
 .destroy {
-  height: 32px;
-  padding: 6px 12px;
-  border: 0;
-  border-radius: var(--radius-button);
-  background: var(--danger);
-  color: #fff;
-  font-weight: 500;
+  composes: destroy from "./form.module.css";
 }

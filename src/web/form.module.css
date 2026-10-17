@@ -1,7 +1,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   margin-bottom: var(--space-3);
 }
 
@@ -12,27 +12,36 @@
 }
 
 .label {
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 600;
-  color: var(--text-subtle);
+  font-size: var(--text-xs);
+  line-height: var(--leading);
+  font-weight: var(--weight-strong);
+  color: var(--text-muted);
 }
 
 .input {
   width: 100%;
-  min-height: 36px;
-  padding: 6px 10px;
-  border: 1px solid rgb(9 30 66 / 0.25);
-  border-radius: var(--radius-card);
-  background: var(--surface);
+  min-height: var(--field);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-md);
+  background: var(--field-background);
+  font-size: var(--text-base);
+  transition: border-color var(--duration-fast) var(--ease-out);
 }
 
 textarea.input {
+  padding: var(--space-2) var(--space-3);
   resize: vertical;
+}
+
+.input:focus-visible {
+  border-color: var(--focus);
+  outline-offset: 0;
 }
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
   margin-top: var(--space-4);
@@ -44,49 +53,90 @@ textarea.input {
 
 .primary,
 .secondary,
-.danger {
-  height: 32px;
-  padding: 0 12px;
+.ghost,
+.danger,
+.destroy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control);
+  padding: 0 var(--space-3);
   border: 0;
-  border-radius: var(--radius-card);
-  font-weight: 500;
+  border-radius: var(--radius-md);
+  font-weight: var(--weight-strong);
+  white-space: nowrap;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.primary:active,
+.secondary:active,
+.ghost:active,
+.danger:active,
+.destroy:active {
+  transform: scale(0.97);
 }
 
 .primary {
-  background: var(--link);
-  color: #fff;
-}
-
-.primary:hover {
-  background: #1558bc;
+  background: var(--accent);
+  color: var(--text-on-solid);
 }
 
 .secondary {
-  background: rgb(9 30 66 / 0.06);
+  background: var(--chip);
 }
 
-.secondary:hover {
-  background: var(--hover);
+.ghost {
+  background: transparent;
 }
 
 .danger {
   background: transparent;
-  color: var(--danger);
+  color: var(--text-danger);
 }
 
-.danger:hover {
-  background: rgb(174 46 36 / 0.1);
+.destroy {
+  background: var(--danger);
+  color: var(--text-on-solid);
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  .secondary:hover:not(:disabled),
+  .ghost:hover {
+    background: var(--hover);
+  }
+
+  .danger:hover {
+    background: var(--danger-wash);
+  }
+
+  .destroy:hover {
+    background: var(--danger-hover);
+  }
 }
 
 .confirm {
   margin-top: var(--space-4);
   padding: var(--space-3);
-  border-radius: var(--radius-card);
-  background: rgb(174 46 36 / 0.08);
+  border-radius: var(--radius-md);
+  background: var(--danger-wash);
 }
 
 .confirm p {
-  margin: 0 0 var(--space-2);
+  margin-bottom: var(--space-2);
 }
 
 .confirmActions {
@@ -94,12 +144,6 @@ textarea.input {
   gap: var(--space-2);
 }
 
-.destroy {
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: var(--radius-card);
-  background: var(--danger);
-  color: #fff;
-  font-weight: 500;
+.error {
+  color: var(--text-danger);
 }

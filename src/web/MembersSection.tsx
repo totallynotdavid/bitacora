@@ -56,7 +56,11 @@ function Invite() {
           Invitar
         </button>
       </div>
-      {failed && <p role="alert">No se pudo crear la invitación.</p>}
+      {failed && (
+        <p className={form.error} role="alert">
+          No se pudo crear la invitación.
+        </p>
+      )}
       {link && (
         <>
           <CopyLink id="invite-link" label="Enlace de invitación" value={`${location.origin}${link.path}`} />
@@ -122,7 +126,11 @@ function Row(props: { member: Member; self: boolean; onChange: (member: Member) 
           </button>
         )}
       </div>
-      {failed && <p role="alert">No se pudo completar la acción.</p>}
+      {failed && (
+        <p className={form.error} role="alert">
+          No se pudo completar la acción.
+        </p>
+      )}
       {reset && (
         <>
           <CopyLink

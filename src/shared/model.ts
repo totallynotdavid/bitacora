@@ -21,15 +21,10 @@ export const LABEL_COLOR_NAMES: Record<LabelColor, string> = {
   blue: "Azul",
 };
 
-/** The background of a label and the text color that reads on it. */
-export const LABEL_STYLES: Record<LabelColor, { background: string; text: string }> = {
-  green: { background: "rgb(75 206 151)", text: "rgb(22 75 53)" },
-  yellow: { background: "rgb(238 209 43)", text: "rgb(83 63 4)" },
-  orange: { background: "rgb(252 167 0)", text: "rgb(105 50 0)" },
-  red: { background: "rgb(248 113 104)", text: "rgb(93 31 26)" },
-  purple: { background: "rgb(201 124 244)", text: "rgb(72 36 93)" },
-  blue: { background: "rgb(102 157 241)", text: "rgb(18 50 99)" },
-};
+/** Returns the fill and text tokens for a label. */
+export function labelStyle(color: LabelColor): { background: string; color: string } {
+  return { background: `var(--label-${color}-bg)`, color: `var(--label-${color}-text)` };
+}
 
 export const MIN_PASSWORD = 8;
 

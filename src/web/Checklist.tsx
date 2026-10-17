@@ -100,7 +100,7 @@ function ItemComposer({ onAdd, startOpen }: { onAdd: (text: string) => void; sta
           Añadir
         </button>
         <button type="button" className={styles.cancel} aria-label="Cerrar" onClick={() => setOpen(false)}>
-          <X size={18} />
+          <X size={16} aria-hidden />
         </button>
       </div>
     </form>
@@ -129,7 +129,7 @@ export function Checklist(props: {
         </h3>
         {done > 0 && (
           <button type="button" className={styles.toggle} onClick={() => setHideDone(!hideDone)}>
-            {hideDone ? <Eye size={14} aria-hidden /> : <EyeOff size={14} aria-hidden />}
+            {hideDone ? <Eye size={16} aria-hidden /> : <EyeOff size={16} aria-hidden />}
             {hideDone ? "Mostrar marcados" : "Ocultar marcados"}
           </button>
         )}
@@ -146,7 +146,7 @@ export function Checklist(props: {
           aria-valuemax={100}
           data-complete={items.length > 0 && percent === 100}
         >
-          <div className={styles.fill} style={{ width: `${percent}%` }} />
+          <div className={styles.fill} style={{ transform: `scaleX(${percent / 100})` }} />
         </div>
       </div>
 
@@ -168,7 +168,7 @@ export function Checklist(props: {
                 aria-label={`Eliminar elemento: ${item.text}`}
                 onClick={() => props.onSave(items.filter((_, i) => i !== index))}
               >
-                <Trash2 size={14} />
+                <Trash2 size={16} aria-hidden />
               </button>
             </li>
           ),

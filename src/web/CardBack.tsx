@@ -1,7 +1,7 @@
-import { ChevronDown, Clock, ListChecks, Tag, Trash2, User, X } from "lucide-react";
+import { ArrowRight, Clock, ListChecks, Tag, Trash2, User, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { dayHeading } from "../shared/dates";
-import { LABEL_STYLES, LIST_TITLES, type Card } from "../shared/model";
+import { labelStyle, LIST_TITLES, type Card } from "../shared/model";
 import type { Fields } from "./boardState";
 import { Checklist } from "./Checklist";
 import { CardPopover, type CardActions, type PopoverKind } from "./CardPopover";
@@ -68,6 +68,7 @@ const BUTTONS: { kind: PopoverKind; label: string; icon: typeof Tag }[] = [
   { kind: "label", label: "Etiqueta", icon: Tag },
   { kind: "requester", label: "Solicitante", icon: User },
   { kind: "date", label: "Fecha", icon: Clock },
+  { kind: "move", label: "Mover", icon: ArrowRight },
 ];
 
 export function CardBack(props: {
@@ -93,12 +94,15 @@ export function CardBack(props: {
   const move = (to: Container) => actions.move(to);
 
   return (
-    <dialog {...modal.props} className={styles.dialog} aria-label="Tarjeta" onClose={props.onClose}>
+    <dialog
+      {...modal.props}
+      className={styles.dialog}
+      data-elevation="modal"
+      aria-label="Tarjeta"
+      onClose={props.onClose}
+    >
       <header className={styles.bar}>
-        <button type="button" className={styles.list} onClick={toggle("move")}>
-          {LIST_TITLES[card.list]}
-          <ChevronDown size={16} aria-hidden />
-        </button>
+        <span className={styles.list}>{LIST_TITLES[card.list]}</span>
         <div className={styles.barActions}>
           <button
             type="button"
@@ -141,10 +145,7 @@ export function CardBack(props: {
               <button
                 type="button"
                 className={styles.labelChip}
-                style={{
-                  background: LABEL_STYLES[chosen.color].background,
-                  color: LABEL_STYLES[chosen.color].text,
-                }}
+                style={labelStyle(chosen.color)}
                 onClick={toggle("label")}
               >
                 {chosen.name}

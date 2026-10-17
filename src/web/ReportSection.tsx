@@ -25,12 +25,12 @@ export function ReportSection(props: { settings: Settings; onChange: (settings: 
 
       <div className={form.actions}>
         <a className={form.secondary + " " + styles.anchor} href={link} target="_blank" rel="noreferrer">
-          <ExternalLink size={14} aria-hidden /> Abrir informe
+          <ExternalLink size={16} aria-hidden /> Abrir informe
         </a>
         <span className={form.spacer} />
         {!confirming && (
           <button type="button" className={form.danger} onClick={() => setConfirming(true)}>
-            <RefreshCw size={14} aria-hidden /> Generar enlace nuevo
+            <RefreshCw size={16} aria-hidden /> Generar enlace nuevo
           </button>
         )}
       </div>

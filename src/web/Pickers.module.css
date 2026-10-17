@@ -1,57 +1,42 @@
 .label {
+  composes: label from "./form.module.css";
   display: block;
-  margin: 8px 0 4px;
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 600;
-  color: var(--text-subtle);
+  margin: var(--space-2) 0 var(--space-1);
 }
 
 .input {
-  width: 100%;
-  height: 36px;
-  padding: 6px 10px;
-  border: 1px solid rgb(9 30 66 / 0.25);
-  border-radius: var(--radius-button);
-  background: var(--surface);
-  transition:
-    background-color var(--motion-fast) ease-out,
-    border-color var(--motion-fast) ease-out,
-    box-shadow var(--motion-fast) ease-out;
+  composes: input from "./form.module.css";
 }
 
 .options {
-  margin: 8px 0 0;
+  margin-top: var(--space-2);
   padding: 0;
   list-style: none;
 }
 
 .options > li + li {
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .option {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
-  height: 32px;
-  padding: 0 12px;
+  min-height: var(--control);
+  padding: 0 var(--space-3);
   border: 0;
-  border-radius: var(--radius-chip);
-  font-weight: 500;
-  text-align: left;
-  transition:
-    background-color var(--motion-fast) ease-out,
-    filter var(--motion-fast) ease-out;
-}
-
-.option {
+  border-radius: var(--radius-md);
   background: transparent;
+  font-weight: var(--weight-strong);
+  text-align: left;
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
-.option:hover {
-  background: var(--subtle-hover);
+@media (hover: hover) and (pointer: fine) {
+  .option:hover {
+    background: var(--hover);
+  }
 }
 
 .option > svg {
@@ -60,47 +45,19 @@
 
 .actions {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.primary,
-.button {
-  height: 32px;
-  padding: 6px 12px;
-  border: 0;
-  border-radius: var(--radius-button);
-  font-weight: 500;
-  transition: background-color var(--motion-fast) ease-out;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .primary {
-  background: var(--link);
-  color: #fff;
-}
-
-.primary:hover:not(:disabled) {
-  background: var(--primary-hover);
-}
-
-.primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  composes: primary from "./form.module.css";
 }
 
 .button {
-  background: var(--button);
-}
-
-.button:hover {
-  background: var(--neutral-hover);
-}
-
-.button:active {
-  background: var(--neutral-pressed);
+  composes: secondary from "./form.module.css";
 }
 
 .error {
-  margin: 4px 0 0;
-  color: var(--danger);
+  margin-top: var(--space-1);
+  color: var(--text-danger);
 }
