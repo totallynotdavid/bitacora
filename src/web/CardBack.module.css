@@ -160,7 +160,7 @@
 }
 
 .chip,
-.category {
+.labelChip {
   display: inline-flex;
   align-items: center;
   height: 32px;
@@ -185,7 +185,7 @@
   background: var(--neutral-pressed);
 }
 
-.category:hover {
+.labelChip:hover {
   filter: brightness(0.94);
 }
 

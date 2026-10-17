@@ -1,10 +1,11 @@
 import type { Card } from "../shared/model";
 import type { Fields } from "./boardState";
 import type { Container } from "./groups";
-import { CategoryPicker, DatePicker, MovePicker, RequesterPicker } from "./Pickers";
+import { LabelPicker } from "./LabelPicker";
+import { DatePicker, MovePicker, RequesterPicker } from "./Pickers";
 import { Popover } from "./Popover";
 
-export type PopoverKind = "category" | "requester" | "move" | "date";
+export type PopoverKind = "label" | "requester" | "move" | "date";
 
 export type CardActions = {
   edit: (fields: Fields) => void;
@@ -12,7 +13,7 @@ export type CardActions = {
 };
 
 const TITLES: Record<PopoverKind, string> = {
-  category: "Categoría",
+  label: "Etiqueta",
   requester: "Solicitante",
   move: "Mover tarjeta",
   date: "Fecha de término",
@@ -31,11 +32,11 @@ export function CardPopover(props: {
 
   return (
     <Popover title={TITLES[props.kind]} anchor={props.anchor} onClose={props.onClose}>
-      {props.kind === "category" && (
-        <CategoryPicker
-          value={card.category}
-          onPick={(category) => {
-            if (category !== card.category) actions.edit({ category });
+      {props.kind === "label" && (
+        <LabelPicker
+          value={card.labelId}
+          onPick={(labelId) => {
+            if (labelId !== card.labelId) actions.edit({ labelId });
             props.onClose();
           }}
         />
@@ -65,7 +66,7 @@ export function CardPopover(props: {
           value={card.doneDate}
           today={today}
           onSave={(date) => {
-            if (date !== card.doneDate) actions.move({ list: "hecho", later: false, doneDate: date });
+            if (date !== card.doneDate) actions.move({ list: "hecho", doneDate: date });
             props.onClose();
           }}
         />

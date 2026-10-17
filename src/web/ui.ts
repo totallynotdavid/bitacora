@@ -1,4 +1,7 @@
 import { createContext, useContext } from "react";
+import type { Label } from "../shared/model";
+import type { CreateLabel, UpdateLabel } from "../shared/schemas";
+import type { LabelResult } from "./useBoard";
 
 /** What the cards and lists ask the board page to do. */
 export type Ui = {
@@ -11,6 +14,12 @@ export type Ui = {
   composer: string | null;
   setComposer: (id: string | null) => void;
   addCard: (container: string, title: string) => void;
+  /** The user's labels, by name. */
+  labels: Label[];
+  /** Each of these answers with the message to show when the server refused. */
+  createLabel: (input: Omit<CreateLabel, "id">) => Promise<LabelResult>;
+  updateLabel: (id: string, patch: UpdateLabel) => Promise<LabelResult>;
+  removeLabel: (id: string) => Promise<{ error: string } | null>;
 };
 
 export const UiContext = createContext<Ui | null>(null);

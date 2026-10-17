@@ -1,3 +1,20 @@
+.section {
+  padding-bottom: var(--space-4);
+}
+
+.section + .section {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.heading {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-size);
+  line-height: var(--text-leading);
+  font-weight: 650;
+  color: var(--heading);
+}
+
 .linkRow {
   display: flex;
   gap: var(--space-2);
@@ -23,4 +40,54 @@
   line-height: 32px;
   color: var(--text);
   text-decoration: none;
+}
+
+.inviteRow {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.role {
+  width: auto;
+}
+
+.form + .form {
+  margin-top: var(--space-4);
+}
+
+.members {
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member {
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--border);
+}
+
+.member[data-disabled="true"] .who {
+  opacity: 0.6;
+}
+
+.memberHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.memberActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
 }

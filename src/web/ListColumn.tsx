@@ -31,43 +31,17 @@ function Column(props: { list: ListId; count: number; composer?: string; childre
   );
 }
 
-function PendingGroup(props: Shared & { later: boolean; label: string }) {
-  const container: Container = { list: "pendiente", later: props.later, doneDate: null };
+/** A list whose cards sit in one stack: Pendiente, Esta semana or En curso. */
+export function FlatColumn(props: Shared & { list: Exclude<ListId, "hecho"> }) {
+  const container: Container = { list: props.list, doneDate: null };
   const cards = inContainer(props.cards, container);
   return (
-    <div className={styles.group} data-composer={containerId(container)}>
-      <h3 className={styles.groupLabel}>
-        <span>{props.label}</span>
-        <span className={styles.count}>{cards.length}</span>
-      </h3>
-      <CardStack container={container} cards={cards} dragging={props.dragging} />
-      <Composer container={containerId(container)} />
-    </div>
-  );
-}
-
-export function PendingColumn(props: Shared) {
-  const total = props.cards.filter((card) => card.list === "pendiente").length;
-  return (
-    <Column list="pendiente" count={total} composer="pendiente:week">
-      <div className={styles.body}>
-        <PendingGroup {...props} later={false} label="Esta semana" />
-        <PendingGroup {...props} later label="Después" />
-      </div>
-    </Column>
-  );
-}
-
-export function ActiveColumn(props: Shared) {
-  const container: Container = { list: "en_curso", later: false, doneDate: null };
-  const cards = inContainer(props.cards, container);
-  return (
-    <Column list="en_curso" count={cards.length} composer="en_curso">
+    <Column list={props.list} count={cards.length} composer={props.list}>
       <div className={styles.body}>
         <CardStack container={container} cards={cards} dragging={props.dragging} />
       </div>
       <footer className={styles.footer}>
-        <Composer container="en_curso" />
+        <Composer container={props.list} />
       </footer>
     </Column>
   );
@@ -92,7 +66,7 @@ function Collapsible(props: { open: boolean; children: ReactNode }) {
 }
 
 function DayGroup(props: Shared & { date: string; today: string; open: boolean; onToggle: () => void }) {
-  const container: Container = { list: "hecho", later: false, doneDate: props.date };
+  const container: Container = { list: "hecho", doneDate: props.date };
   const cards = inContainer(props.cards, container);
   const { setNodeRef, isOver } = useDroppable({
     id: containerId(container) + HEADER_SUFFIX,
@@ -133,7 +107,7 @@ export function DoneColumn(
   const days = doneDays(props.cards);
   // An empty today still needs a place to drop a card.
   const shown = props.dragging && !days.includes(props.today) ? [props.today, ...days] : days;
-  const todayId = containerId({ list: "hecho", later: false, doneDate: props.today });
+  const todayId = containerId({ list: "hecho", doneDate: props.today });
 
   return (
     <Column

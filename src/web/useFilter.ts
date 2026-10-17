@@ -1,15 +1,18 @@
-import type { Card, Category } from "../shared/model";
+import type { Card } from "../shared/model";
 import { go, useLocation } from "./useLocation";
 
-export type Filter = { q: string; category: Category | ""; requester: string };
+/** `label` is a label id, `NO_LABEL` for cards without one, or empty for any. */
+export type Filter = { q: string; label: string; requester: string };
 
-const PARAMS = { q: "q", category: "categoria", requester: "solicitante" } as const;
+export const NO_LABEL = "none";
+
+const PARAMS = { q: "q", label: "etiqueta", requester: "solicitante" } as const;
 
 export function useFilter() {
   const url = useLocation();
   const filter: Filter = {
     q: url.searchParams.get(PARAMS.q) ?? "",
-    category: (url.searchParams.get(PARAMS.category) ?? "") as Category | "",
+    label: url.searchParams.get(PARAMS.label) ?? "",
     requester: url.searchParams.get(PARAMS.requester) ?? "",
   };
 
@@ -25,16 +28,17 @@ export function useFilter() {
 
   return {
     filter,
-    active: Boolean(filter.q || filter.category || filter.requester),
+    active: Boolean(filter.q || filter.label || filter.requester),
     set,
-    clear: () => set({ q: "", category: "", requester: "" }),
+    clear: () => set({ q: "", label: "", requester: "" }),
   };
 }
 
 export function matches(card: Card, filter: Filter): boolean {
   const text = filter.q.trim().toLowerCase();
   if (text && !`${card.title}\n${card.description}`.toLowerCase().includes(text)) return false;
-  if (filter.category && card.category !== filter.category) return false;
+  if (filter.label === NO_LABEL ? card.labelId !== null : filter.label && card.labelId !== filter.label)
+    return false;
   if (filter.requester && card.requester !== filter.requester) return false;
   return true;
 }

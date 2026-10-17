@@ -1,0 +1,117 @@
+.row {
+  display: flex;
+  gap: 4px;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-chip);
+  font-weight: 500;
+  text-align: left;
+  overflow-wrap: anywhere;
+  transition: filter var(--motion-fast) ease-out;
+}
+
+.label:hover {
+  filter: brightness(0.94);
+}
+
+.label > svg {
+  margin-left: auto;
+}
+
+.edit {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-chip);
+  background: transparent;
+  color: var(--text-subtle);
+  transition: background-color var(--motion-fast) ease-out;
+}
+
+.edit:hover {
+  background: var(--subtle-hover);
+}
+
+.colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.swatch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 32px;
+  border-radius: var(--radius-chip);
+  cursor: pointer;
+}
+
+.swatch:hover {
+  filter: brightness(0.94);
+}
+
+.swatch:has(:focus-visible) {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.radio {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.remove {
+  margin-left: auto;
+  height: 32px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.remove:hover {
+  background: rgb(174 46 36 / 0.1);
+}
+
+.confirm {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: var(--radius-card);
+  background: rgb(174 46 36 / 0.08);
+}
+
+.confirm p {
+  margin: 0;
+}
+
+.destroy {
+  height: 32px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: var(--danger);
+  color: #fff;
+  font-weight: 500;
+}

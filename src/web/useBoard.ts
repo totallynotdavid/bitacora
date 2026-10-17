@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Card } from "../shared/model";
+import type { Card, Label } from "../shared/model";
+import type { CreateLabel, UpdateLabel } from "../shared/schemas";
 import { api, ApiError, removeOnExit } from "./api";
 import { project, serverIndex, settled, type Fields, type Op, type Pending } from "./boardState";
 import type { Container } from "./groups";
@@ -15,6 +16,7 @@ type State = {
   loadError: boolean;
   today: string;
   requesters: string[];
+  labels: Label[];
   olderWeek: string | null;
   /** The cards as the server holds them, once every write before the pending ones has settled. */
   base: Card[];
@@ -27,11 +29,23 @@ const empty: State = {
   loadError: false,
   today: "",
   requesters: [],
+  labels: [],
   olderWeek: null,
   base: [],
   pending: [],
   toasts: [],
 };
+
+const byName = (labels: Label[]) => labels.toSorted((a, b) => a.name.localeCompare(b.name, "es"));
+
+/** A saved label, or the message that says why it was not. */
+export type LabelResult = { label: Label } | { error: string };
+
+function labelError(error: unknown): string {
+  if (error instanceof ApiError && error.status === 409) return "Ya existe una etiqueta con ese nombre.";
+  console.error(error);
+  return "No se pudo guardar la etiqueta.";
+}
 
 const UNDO_MS = 6000;
 const NOTICE_MS = 4000;
@@ -62,6 +76,7 @@ export function useBoard() {
           loaded: true,
           today: board.today,
           requesters: board.requesters,
+          labels: board.labels,
           olderWeek: board.olderWeek,
           base: board.cards,
         })),
@@ -161,6 +176,7 @@ export function useBoard() {
     loadError: state.loadError,
     today: state.today,
     requesters,
+    labels: state.labels,
     cards: view.visible,
     olderWeek: state.olderWeek,
     toasts: state.toasts,
@@ -172,11 +188,10 @@ export function useBoard() {
         id: crypto.randomUUID(),
         title,
         description: "",
-        category: "Otros",
+        labelId: null,
         requester: null,
         checklist: [],
         list: to.list,
-        later: to.list === "pendiente" && to.later,
         position: 0,
         doneDate: to.list === "hecho" ? to.doneDate : null,
       };
@@ -190,6 +205,52 @@ export function useBoard() {
 
     move(id: string, to: Container, beforeId: string | null) {
       enqueue({ kind: "move", id, to, beforeId });
+    },
+
+    /**
+     * Labels are written at once rather than queued: a card edit that names a
+     * new label must find it on the server. The label picker sits in a modal
+     * that hides the toasts, so each call answers with the message to show.
+     */
+    async createLabel(input: Omit<CreateLabel, "id">): Promise<LabelResult> {
+      try {
+        const label = await api.createLabel({ id: crypto.randomUUID(), ...input });
+        change((s) => ({ ...s, labels: byName([...s.labels, label]) }));
+        return { label };
+      } catch (error) {
+        return { error: labelError(error) };
+      }
+    },
+
+    async updateLabel(id: string, patch: UpdateLabel): Promise<LabelResult> {
+      try {
+        const label = await api.updateLabel(id, patch);
+        change((s) => ({ ...s, labels: byName(s.labels.map((known) => (known.id === id ? label : known))) }));
+        return { label };
+      } catch (error) {
+        return { error: labelError(error) };
+      }
+    },
+
+    /** The server clears the label from its cards. The screen does the same. */
+    async removeLabel(id: string): Promise<{ error: string } | null> {
+      try {
+        await api.removeLabel(id);
+      } catch (error) {
+        if (!(error instanceof ApiError && error.status === 404)) return { error: labelError(error) };
+      }
+      const clear = (card: Card): Card => (card.labelId === id ? { ...card, labelId: null } : card);
+      change((s) => ({
+        ...s,
+        labels: s.labels.filter((label) => label.id !== id),
+        base: s.base.map(clear),
+        pending: s.pending.map((p) =>
+          p.op.kind === "edit" && p.op.fields.labelId === id
+            ? { ...p, op: { ...p.op, fields: { ...p.op.fields, labelId: null } } }
+            : p,
+        ),
+      }));
+      return null;
     },
 
     remove(id: string) {
@@ -249,7 +310,7 @@ export function useBoard() {
 async function write(op: Op, base: Card[]): Promise<Card | undefined> {
   switch (op.kind) {
     case "create":
-      return api.create({ id: op.card.id, title: op.card.title, list: op.card.list, later: op.card.later });
+      return api.create({ id: op.card.id, title: op.card.title, list: op.card.list });
     case "edit":
       return api.update(op.id, op.fields);
     case "move":
@@ -257,7 +318,6 @@ async function write(op: Op, base: Card[]): Promise<Card | undefined> {
         op.id,
         {
           list: op.to.list,
-          later: op.to.later,
           doneDate: op.to.list === "hecho" ? (op.to.doneDate ?? undefined) : undefined,
         },
         serverIndex(base, op),

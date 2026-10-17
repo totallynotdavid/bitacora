@@ -2,10 +2,10 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { AlignLeft, Check, ListChecks, Pencil } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
-import { CATEGORY_COLORS, CATEGORY_TEXT, type Card } from "../shared/model";
+import { LABEL_STYLES, type Card } from "../shared/model";
 import styles from "./CardView.module.css";
 import { useUi } from "./ui";
-import { useLabels } from "./useLabels";
+import { useStripeNames } from "./useStripeNames";
 
 /**
  * The card's completion control: a circle that shows on hover, or the green
@@ -62,7 +62,9 @@ export function CardFace({
   lifted?: boolean;
   onToggleDone?: () => void;
 }) {
-  const labels = useLabels();
+  const stripeNames = useStripeNames();
+  const { labels } = useUi();
+  const label = labels.find((known) => known.id === card.labelId);
   const checked = card.checklist.filter((item) => item.done).length;
   const hasBadges = card.requester || card.checklist.length > 0 || card.description;
   const done = card.list === "hecho";
@@ -72,26 +74,31 @@ export function CardFace({
       className={styles.face}
       data-lifted={lifted}
       style={
-        {
-          "--stripe": CATEGORY_COLORS[card.category],
-          "--stripe-text": CATEGORY_TEXT[card.category],
-        } as CSSProperties
+        label
+          ? ({
+              "--stripe": LABEL_STYLES[label.color].background,
+              "--stripe-text": LABEL_STYLES[label.color].text,
+            } as CSSProperties)
+          : undefined
       }
     >
-      <button
-        type="button"
-        className={labels.expanded ? styles.pill : styles.stripe}
-        title={card.category}
-        aria-label={`Categoría ${card.category}. Alternar nombre de las etiquetas`}
-        onPointerDown={(event) => event.stopPropagation()}
-        onClick={(event) => {
-          event.stopPropagation();
-          labels.toggle();
-        }}
-        onKeyDown={(event) => event.stopPropagation()}
-      >
-        {labels.expanded ? card.category : null}
-      </button>
+      {label && (
+        <button
+          type="button"
+          className={stripeNames.expanded ? styles.pill : styles.stripe}
+          data-label={label.id}
+          title={label.name}
+          aria-label={`Etiqueta ${label.name}. Alternar nombre de las etiquetas`}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            stripeNames.toggle();
+          }}
+          onKeyDown={(event) => event.stopPropagation()}
+        >
+          {stripeNames.expanded ? label.name : null}
+        </button>
+      )}
       <div className={styles.titleRow} data-done={done}>
         <Completion done={done} size="card" onToggle={onToggleDone} />
         <div className={styles.title}>{title ?? card.title}</div>

@@ -1,37 +1,7 @@
-import { Check } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import {
-  CATEGORIES,
-  CATEGORY_COLORS,
-  CATEGORY_TEXT,
-  LIST_TITLES,
-  LISTS,
-  type Card,
-  type Category,
-  type ListId,
-} from "../shared/model";
+import { LIST_TITLES, LISTS, type Card, type ListId } from "../shared/model";
 import type { Container } from "./groups";
 import styles from "./Pickers.module.css";
-
-export function CategoryPicker(props: { value: Category; onPick: (category: Category) => void }) {
-  return (
-    <ul className={styles.options}>
-      {CATEGORIES.map((name) => (
-        <li key={name}>
-          <button
-            type="button"
-            className={styles.category}
-            style={{ background: CATEGORY_COLORS[name], color: CATEGORY_TEXT[name] }}
-            onClick={() => props.onPick(name)}
-          >
-            {name}
-            {name === props.value && <Check size={16} aria-label="Actual" />}
-          </button>
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 export function RequesterPicker(props: {
   value: string | null;
@@ -90,13 +60,8 @@ export function RequesterPicker(props: {
 
 export function MovePicker(props: { card: Card; today: string; onMove: (to: Container) => void }) {
   const [list, setList] = useState<ListId>(props.card.list);
-  const [later, setLater] = useState(props.card.later);
-  const target: Container = {
-    list,
-    later: list === "pendiente" && later,
-    doneDate: list === "hecho" ? props.today : null,
-  };
-  const unchanged = list === props.card.list && target.later === props.card.later;
+  const target: Container = { list, doneDate: list === "hecho" ? props.today : null };
+  const unchanged = list === props.card.list;
 
   return (
     <form
@@ -122,22 +87,6 @@ export function MovePicker(props: { card: Card; today: string; onMove: (to: Cont
           </option>
         ))}
       </select>
-      {list === "pendiente" && (
-        <>
-          <label className={styles.label} htmlFor="move-group">
-            Grupo
-          </label>
-          <select
-            id="move-group"
-            className={styles.input}
-            value={later ? "later" : "week"}
-            onChange={(event) => setLater(event.target.value === "later")}
-          >
-            <option value="week">Esta semana</option>
-            <option value="later">Después</option>
-          </select>
-        </>
-      )}
       <div className={styles.actions}>
         <button type="submit" className={styles.primary} disabled={unchanged}>
           Mover

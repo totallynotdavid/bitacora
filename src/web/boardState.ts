@@ -3,7 +3,7 @@ import type { UpdateCard } from "../shared/schemas";
 import { inContainer, placeCard, type Container } from "./groups";
 
 /** The card fields a plain edit can change. Placement changes go through a move. */
-export type Fields = Pick<UpdateCard, "title" | "description" | "category" | "requester" | "checklist">;
+export type Fields = Pick<UpdateCard, "title" | "description" | "labelId" | "requester" | "checklist">;
 
 /** One change the user made, shown at once and written in the background. */
 export type Op =

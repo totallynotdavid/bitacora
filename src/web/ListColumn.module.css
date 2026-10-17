@@ -41,17 +41,6 @@
   margin-top: var(--space-2);
 }
 
-.groupLabel {
-  display: flex;
-  justify-content: space-between;
-  margin: 0;
-  padding: 4px 12px 0;
-  font-size: 13px;
-  line-height: 20px;
-  font-weight: 600;
-  color: var(--text-subtle);
-}
-
 .dayHeader {
   display: flex;
   align-items: center;
@@ -132,11 +121,15 @@
     order: 1;
   }
 
-  .column[data-list="pendiente"] {
+  .column[data-list="esta_semana"] {
     order: 2;
   }
 
-  .column[data-list="hecho"] {
+  .column[data-list="pendiente"] {
     order: 3;
+  }
+
+  .column[data-list="hecho"] {
+    order: 4;
   }
 }

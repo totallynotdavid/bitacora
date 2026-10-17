@@ -1,7 +1,7 @@
 import { ChevronDown, Clock, ListChecks, Tag, Trash2, User, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { dayHeading } from "../shared/dates";
-import { CATEGORY_COLORS, CATEGORY_TEXT, LIST_TITLES, type Card } from "../shared/model";
+import { LABEL_STYLES, LIST_TITLES, type Card } from "../shared/model";
 import type { Fields } from "./boardState";
 import { Checklist } from "./Checklist";
 import { CardPopover, type CardActions, type PopoverKind } from "./CardPopover";
@@ -10,6 +10,7 @@ import { useModal } from "./Dialog";
 import { Description } from "./Description";
 import styles from "./CardBack.module.css";
 import type { Container } from "./groups";
+import { useUi } from "./ui";
 import { useAutosize } from "./useAutosize";
 import { useEscape } from "./useEscape";
 
@@ -64,7 +65,7 @@ function Title({ card, onSave }: { card: Card; onSave: (title: string) => void }
 }
 
 const BUTTONS: { kind: PopoverKind; label: string; icon: typeof Tag }[] = [
-  { kind: "category", label: "Categoría", icon: Tag },
+  { kind: "label", label: "Etiqueta", icon: Tag },
   { kind: "requester", label: "Solicitante", icon: User },
   { kind: "date", label: "Fecha", icon: Clock },
 ];
@@ -77,6 +78,8 @@ export function CardBack(props: {
   onClose: () => void;
 }) {
   const { card, actions } = props;
+  const { labels } = useUi();
+  const chosen = labels.find((known) => known.id === card.labelId);
   const modal = useModal();
   const [popover, setPopover] = useState<{ kind: PopoverKind; anchor: HTMLElement } | null>(null);
   const [checklistShown, setChecklistShown] = useState(false);
@@ -132,17 +135,22 @@ export function CardBack(props: {
         </div>
 
         <div className={styles.fields}>
-          <div>
-            <span className={styles.label}>Categoría</span>
-            <button
-              type="button"
-              className={styles.category}
-              style={{ background: CATEGORY_COLORS[card.category], color: CATEGORY_TEXT[card.category] }}
-              onClick={toggle("category")}
-            >
-              {card.category}
-            </button>
-          </div>
+          {chosen && (
+            <div>
+              <span className={styles.label}>Etiqueta</span>
+              <button
+                type="button"
+                className={styles.labelChip}
+                style={{
+                  background: LABEL_STYLES[chosen.color].background,
+                  color: LABEL_STYLES[chosen.color].text,
+                }}
+                onClick={toggle("label")}
+              >
+                {chosen.name}
+              </button>
+            </div>
+          )}
           {card.requester && (
             <div>
               <span className={styles.label}>Solicitante</span>

@@ -10,7 +10,7 @@ import { useEscape } from "./useEscape";
 const MENU_WIDTH = 176;
 
 const BUTTONS: { kind: PopoverKind; label: string; icon: typeof Tag }[] = [
-  { kind: "category", label: "Categoría", icon: Tag },
+  { kind: "label", label: "Etiqueta", icon: Tag },
   { kind: "requester", label: "Solicitante", icon: User },
   { kind: "date", label: "Fecha", icon: Clock },
   { kind: "move", label: "Mover", icon: ArrowRight },

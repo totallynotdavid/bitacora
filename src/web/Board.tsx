@@ -6,7 +6,7 @@ import { CardBack } from "./CardBack";
 import { CardFace } from "./CardView";
 import { FilterPopover } from "./FilterPopover";
 import { inContainer, parseContainerId } from "./groups";
-import { ActiveColumn, DoneColumn, PendingColumn } from "./ListColumn";
+import { DoneColumn, FlatColumn } from "./ListColumn";
 import { QuickEdit } from "./QuickEdit";
 import { SettingsDialog } from "./SettingsDialog";
 import { ShortcutsDialog } from "./ShortcutsDialog";
@@ -16,8 +16,8 @@ import { useBoard } from "./useBoard";
 import { useCardRoute } from "./useCardRoute";
 import { dragAnnouncements, useCardDrag } from "./useCardDrag";
 import { matches, useFilter } from "./useFilter";
-import { LabelsContext, useLabelsState } from "./useLabels";
 import { useOpenDays } from "./useOpenDays";
+import { StripeNamesContext, useStripeNamesState } from "./useStripeNames";
 
 function isTyping(target: EventTarget | null): boolean {
   return (
@@ -32,7 +32,7 @@ export function Board() {
   const board = useBoard();
   const route = useCardRoute();
   const { filter, active: filtering, set: setFilter, clear: clearFilter } = useFilter();
-  const labels = useLabelsState();
+  const stripeNames = useStripeNamesState();
   const days = useOpenDays(board.today);
 
   const [composer, setComposer] = useState<string | null>(null);
@@ -55,10 +55,10 @@ export function Board() {
     const card = board.cards.find((c) => c.id === id);
     if (!card) return;
     if (card.list === "hecho") {
-      board.move(id, { list: "en_curso", later: false, doneDate: null }, null);
+      board.move(id, { list: "en_curso", doneDate: null }, null);
       return;
     }
-    const today = { list: "hecho", later: false, doneDate: board.today } as const;
+    const today = { list: "hecho", doneDate: board.today } as const;
     board.move(id, today, inContainer(board.cards, today)[0]?.id ?? null);
     days.open(board.today);
   };
@@ -81,6 +81,10 @@ export function Board() {
     composer,
     setComposer,
     addCard,
+    labels: board.labels,
+    createLabel: board.createLabel,
+    updateLabel: board.updateLabel,
+    removeLabel: board.removeLabel,
   };
 
   const openCard = route.id ? board.cards.find((card) => card.id === route.id) : undefined;
@@ -130,7 +134,7 @@ export function Board() {
   const shared = { cards: drag.cards, dragging: drag.dragging !== null };
 
   return (
-    <LabelsContext.Provider value={labels}>
+    <StripeNamesContext.Provider value={stripeNames}>
       <UiContext.Provider value={ui}>
         <div
           className={styles.page}
@@ -208,8 +212,9 @@ export function Board() {
               onDragCancel={drag.onDragCancel}
             >
               <main className={styles.lists}>
-                <PendingColumn {...shared} />
-                <ActiveColumn {...shared} />
+                <FlatColumn {...shared} list="pendiente" />
+                <FlatColumn {...shared} list="esta_semana" />
+                <FlatColumn {...shared} list="en_curso" />
                 <DoneColumn
                   {...shared}
                   today={board.today}
@@ -265,6 +270,7 @@ export function Board() {
           <FilterPopover
             anchor={filterButton.current}
             filter={filter}
+            labels={board.labels}
             requesters={board.requesters}
             onChange={setFilter}
             onClear={clearFilter}
@@ -276,6 +282,6 @@ export function Board() {
         {helpOpen && <ShortcutsDialog onClose={() => setHelpOpen(false)} />}
         <Toasts toasts={board.toasts} onClose={board.closeToast} />
       </UiContext.Provider>
-    </LabelsContext.Provider>
+    </StripeNamesContext.Provider>
   );
 }
