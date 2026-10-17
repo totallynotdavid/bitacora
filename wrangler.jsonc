@@ -18,7 +18,4 @@
       "migrations_dir": "drizzle",
     },
   ],
-  "vars": {
-    "OWNER_NAME": "Propietario",
-  },
 }

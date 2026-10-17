@@ -15,6 +15,13 @@
       "when": 1792189619502,
       "tag": "0001_seed_report_token",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792196250254,
+      "tag": "0002_accounts",
+      "breakpoints": true
     }
   ]
 }

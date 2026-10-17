@@ -15,7 +15,7 @@ async function derive(password: string, salt: Uint8Array, iterations: number): P
   return new Uint8Array(bits);
 }
 
-/** `pbkdf2-sha256$<iterations>$<salt>$<hash>`, the format of `OWNER_PASSWORD_HASH`. */
+/** `pbkdf2-sha256$<iterations>$<salt>$<hash>`, the format of `users.password_hash`. */
 export async function hashPassword(password: string): Promise<string> {
   const salt = fromBase64Url(randomToken(16));
   const hash = await derive(password, salt, ITERATIONS);

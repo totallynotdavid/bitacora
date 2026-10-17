@@ -1,14 +1,17 @@
 import { Hono } from "hono";
-import { InvalidCard } from "./cards";
+import { CardIdTaken, InvalidCard } from "./cards";
+import { LabelConflict } from "./labels";
 import { api } from "./routes/api";
 import { auth } from "./routes/auth";
 import { report } from "./routes/report";
-import { requireSession } from "./session";
+import { requireSession, type AppEnv } from "./session";
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<AppEnv>();
 
 app.onError((error, c) => {
   if (error instanceof InvalidCard) return c.json({ error: error.message }, 400);
+  if (error instanceof CardIdTaken) return c.json({ error: "id already used" }, 409);
+  if (error instanceof LabelConflict) return c.json({ error: "label already exists" }, 409);
   console.error(error);
   return c.json({ error: "internal error" }, 500);
 });
