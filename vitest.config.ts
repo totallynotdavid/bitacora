@@ -13,5 +13,10 @@ export default defineConfig(async () => ({
       },
     }),
   ],
-  test: { include: ["test/**/*.test.ts"], setupFiles: ["./test/setup.ts"] },
+  test: {
+    include: ["test/**/*.test.ts"],
+    setupFiles: ["./test/setup.ts"],
+    // The contrast test reads the token file as text.
+    css: { include: [/tokens\.css/] },
+  },
 }));

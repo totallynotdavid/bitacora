@@ -86,6 +86,15 @@ export const test = base.extend<{ bitacora: Bitacora }>({
 
 export { expect };
 
+export async function chooseFromMenu(
+  page: Page,
+  item: string,
+  role: "menuitem" | "menuitemradio" = "menuitem",
+) {
+  await page.locator("header [aria-haspopup='menu']").click();
+  await page.getByRole(role, { name: item }).click();
+}
+
 /**
  * Lifts a card with the pointer, passes the drag threshold and moves over the target.
  * The pointer stays down: the test releases it with `page.mouse.up()`.

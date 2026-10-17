@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { expect, lift, test } from "./fixtures";
+import { chooseFromMenu, expect, lift, test } from "./fixtures";
 
 const NOT_SAVED = "No se pudo guardar.";
 
@@ -237,7 +237,7 @@ test.describe("completion circle", () => {
 
     await dialog(page).getByRole("button", { name: "Marcar como hecha" }).click();
 
-    await expect(dialog(page).getByRole("button", { name: "Hecho", exact: true })).toBeVisible();
+    await expect(dialog(page).getByText("Hecho", { exact: true })).toBeVisible();
     await expect(bitacora.list("Hecho").locator("[data-card-id]")).toHaveText(["Tarea"]);
     await expect.poll(async () => (await bitacora.board()).cards[0]?.list).toBe("hecho");
   });
@@ -411,14 +411,19 @@ test.describe("labels", () => {
 
     await expect(dialog(page).getByText("Urgente")).toBeVisible();
     await dialog(page).getByRole("button", { name: "Cerrar" }).click();
-    await expect(stripe).toHaveCSS("background-color", "rgb(248, 113, 104)");
+    await expect(stripe).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    const red: string = await page.evaluate(`getComputedStyle(
+      [...document.querySelectorAll("[data-card-id]")]
+        .find((card) => card.textContent.includes("Sin color"))
+        .querySelector("[data-label]")
+    ).backgroundColor`);
     // Closing the card back goes one step back in history; a reload must not cut that short.
     await expect(page).toHaveURL(/\/$/);
     await expect
       .poll(async () => (await bitacora.board()).cards[0]?.labelId)
       .toBe((await bitacora.board()).labels[0]!.id);
     await page.reload();
-    await expect(stripe).toHaveCSS("background-color", "rgb(248, 113, 104)");
+    await expect(stripe).toHaveCSS("background-color", red);
 
     // Recoloring changes the stripe, and "Sin etiqueta" removes it.
     await bitacora.card("Sin color").click();
@@ -426,6 +431,7 @@ test.describe("labels", () => {
     await page.getByRole("button", { name: "Editar etiqueta Urgente" }).click();
     await page.getByRole("radio", { name: "Azul" }).check({ force: true });
     await page.getByRole("button", { name: "Guardar", exact: true }).click();
+    await expect(stripe).not.toHaveCSS("background-color", red);
     await page.getByRole("button", { name: "Sin etiqueta" }).click();
     await dialog(page).getByRole("button", { name: "Cerrar" }).click();
     await expect(stripe).toHaveCount(0);
@@ -504,14 +510,14 @@ test.describe("four lists", () => {
     await bitacora.open();
     await bitacora.card("Viajera").click();
 
-    await dialog(page).getByRole("button", { name: "Pendiente" }).click();
-    await expect(page.getByLabel("Lista").locator("option")).toHaveText([
+    await dialog(page).getByRole("button", { name: "Mover", exact: true }).click();
+    await expect(page.getByLabel("Lista", { exact: true }).locator("option")).toHaveText([
       "Pendiente (actual)",
       "Esta semana",
       "En curso",
       "Hecho",
     ]);
-    await page.getByLabel("Lista").selectOption("esta_semana");
+    await page.getByLabel("Lista", { exact: true }).selectOption("esta_semana");
     await page.getByRole("button", { name: "Mover", exact: true }).last().click();
 
     await expect(bitacora.list("Esta semana").locator("[data-card-id]")).toHaveText(["Viajera"]);
@@ -568,6 +574,9 @@ test.describe("keyboard shortcuts", () => {
     await expect(help.getByRole("row")).toHaveCount(7);
     await page.keyboard.press("Escape");
     await expect(help).toBeHidden();
+
+    await chooseFromMenu(page, "Atajos de teclado");
+    await expect(help).toBeVisible();
   });
 
   test("Enter opens the focused card", async ({ page, bitacora }) => {
@@ -633,13 +642,13 @@ test.describe("card back fields", () => {
     await expect(popover.getByRole("button", { name: "Guardar" })).toBeDisabled();
   });
 
-  test("the list name opens the move popover", async ({ page, bitacora }) => {
+  test("Mover on the card back sends a card to Hecho", async ({ page, bitacora }) => {
     await bitacora.seed([{ title: "Viajera", list: "en_curso" }]);
     await bitacora.open();
     await bitacora.card("Viajera").click();
 
-    await dialog(page).getByRole("button", { name: "En curso" }).click();
-    await page.getByLabel("Lista").selectOption("hecho");
+    await dialog(page).getByRole("button", { name: "Mover", exact: true }).click();
+    await page.getByLabel("Lista", { exact: true }).selectOption("hecho");
     await page.getByRole("button", { name: "Mover", exact: true }).last().click();
 
     await expect(bitacora.list("Hecho").locator("[data-card-id]")).toHaveText(["Viajera"]);

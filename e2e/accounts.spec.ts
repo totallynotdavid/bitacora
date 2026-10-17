@@ -1,4 +1,4 @@
-import { expect, test } from "./fixtures";
+import { chooseFromMenu, expect, test } from "./fixtures";
 
 test("an admin invites a member, who signs up, adds a card and is never seen on the admin's board", async ({
   page,
@@ -8,7 +8,7 @@ test("an admin invites a member, who signs up, adds a card and is never seen on 
   await bitacora.seed([{ title: "Del admin", list: "en_curso" }]);
   await bitacora.open();
 
-  await page.getByRole("button", { name: "Ajustes" }).click();
+  await chooseFromMenu(page, "Ajustes");
   const settings = page.getByRole("dialog", { name: "Ajustes" });
   const members = settings.getByRole("region", { name: "Miembros" });
   await members.getByLabel("Rol de la invitación").selectOption("member");
@@ -54,7 +54,7 @@ test("an admin invites a member, who signs up, adds a card and is never seen on 
   await expect(reused.getByRole("heading", { name: "Este enlace ya no sirve" })).toBeVisible();
 
   // A member has no Miembros section.
-  await theirs.getByRole("button", { name: "Ajustes" }).click();
+  await chooseFromMenu(theirs, "Ajustes");
   const own = theirs.getByRole("dialog", { name: "Ajustes" });
   await expect(own.getByRole("heading", { name: "Cuenta" })).toBeVisible();
   await expect(own.getByRole("region", { name: "Miembros" })).toHaveCount(0);
