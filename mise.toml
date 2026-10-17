@@ -1,3 +1,90 @@
 [tools]
 bun = "1.4.2"
-node = "lts"
+node = "24.22.0"
+gitleaks = "8.30.1"
+
+[tasks.install]
+description = "Install dependencies from bun.lock without resolving."
+run = "bun install --frozen-lockfile"
+
+[tasks."install:browsers"]
+description = "Download the Chromium build the browser tests use."
+run = "bunx playwright install --with-deps chromium"
+
+[tasks.lint]
+description = "Check lint, formatting (Markdown included) and secrets. Writes nothing."
+depends = ["lint:*"]
+
+[tasks."lint:code"]
+description = "Check oxlint rules, treating warnings as errors."
+run = "bunx oxlint --deny-warnings"
+
+[tasks."lint:format"]
+description = "Check the formatting of every file oxfmt handles."
+run = "bunx oxfmt --check"
+
+[tasks."lint:secrets"]
+description = "Scan the working tree for committed secrets."
+run = "gitleaks dir --no-banner --redact ."
+
+[tasks.fix]
+description = "Apply safe lint fixes and format every file."
+run = ["bunx oxlint --fix", "bunx oxfmt"]
+
+[tasks.types]
+description = "Generate worker-configuration.d.ts from wrangler.jsonc. Git ignores the file."
+run = "bunx wrangler types --strict-vars false"
+
+[tasks.typecheck]
+description = "Type check the Worker and the web app with tsc."
+depends = ["types"]
+run = ["bunx tsc -p tsconfig.json", "bunx tsc -p tsconfig.web.json"]
+
+[tasks.test]
+description = "Run the Worker tests in vitest against a local workerd."
+run = "bunx vitest run"
+
+[tasks."test:e2e"]
+description = "Run the browser tests. They build the app and need Chromium."
+run = "bunx playwright test"
+
+[tasks.build]
+description = "Build the client and the Worker into dist, which git ignores."
+run = "bunx vite build"
+
+[tasks.check]
+description = "Lint, type check, test and build. Writes only ignored files."
+depends = ["lint", "typecheck", "test", "build"]
+
+[tasks.dev]
+description = "Create .dev.vars and the local database on first run, then start Vite."
+run = ["bun scripts/prepare-dev.ts", "bunx vite"]
+
+[tasks.preview]
+description = "Serve the build with Vite."
+run = "bunx vite preview"
+
+[tasks.deploy]
+description = "Build and deploy the Worker."
+depends = ["build"]
+run = "bunx wrangler deploy"
+
+[tasks."db:generate"]
+description = "Write a migration from the difference to the schema."
+run = "bunx drizzle-kit generate"
+
+[tasks."db:migrate:local"]
+description = "Apply pending migrations to the local database."
+run = "bunx wrangler d1 migrations apply DB --local"
+
+[tasks."db:migrate:remote"]
+description = "Apply pending migrations to the deployed database."
+run = "bunx wrangler d1 migrations apply DB --remote"
+
+[tasks.claim-admin]
+description = "Set the first admin's email, name and password. Pass --remote for the deployed database."
+run = "bun scripts/claim-admin.ts"
+
+[tasks."import:trello"]
+description = "Turn a Trello export into SQL. Pass --apply local or --apply remote to run it."
+run = "bun scripts/import-trello.ts"
