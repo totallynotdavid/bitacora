@@ -17,6 +17,11 @@ import {
 const login = (email: string, password: string) =>
   send("/login", { method: "POST", form: { email, password } });
 
+const attemptEmails = async () =>
+  (
+    await env.DB.prepare("SELECT email FROM login_attempts ORDER BY email").all<{ email: string }>()
+  ).results.map((row) => row.email);
+
 describe("access", () => {
   it("rejects API calls without a session", async () => {
     expect((await send("/api/board")).status).toBe(401);
@@ -142,15 +147,11 @@ describe("failed logins", () => {
     await admin();
     await login("uno@example.com", "x");
     for (let attempt = 1; attempt <= 6; attempt++) await login("dos@example.com", "x");
-    const emails = async () =>
-      (
-        await env.DB.prepare("SELECT email FROM login_attempts ORDER BY email").all<{ email: string }>()
-      ).results.map((row) => row.email);
-    expect(await emails()).toEqual(["dos@example.com", "uno@example.com"]);
+    expect(await attemptEmails()).toEqual(["dos@example.com", "uno@example.com"]);
 
     setNow("2026-10-16T17:20:00Z");
     await login("tres@example.com", "x");
-    expect(await emails()).toEqual(["tres@example.com"]);
+    expect(await attemptEmails()).toEqual(["tres@example.com"]);
   });
 
   it("refuses an email longer than an address can be without counting it", async () => {

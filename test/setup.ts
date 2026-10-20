@@ -9,6 +9,8 @@ beforeAll(async () => {
 
 /** Every test starts from the board a fresh deployment has: the unclaimed first admin and nothing else. */
 beforeEach(async () => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-10-16T17:00:00Z"));
   await env.DB.batch([
     env.DB.prepare("DELETE FROM cards"),
     env.DB.prepare("DELETE FROM labels"),
