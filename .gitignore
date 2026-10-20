@@ -4,5 +4,7 @@ dist
 test-results
 .dev.vars
 .env
+.env.*
+!.env.example
 *.log
 worker-configuration.d.ts
