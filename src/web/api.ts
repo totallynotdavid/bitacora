@@ -1,8 +1,10 @@
 import type {
+  ApiToken,
   Board,
   Card,
   DoneWeek,
   IssuedLink,
+  IssuedToken,
   Label,
   ListId,
   Member,
@@ -54,6 +56,9 @@ export const api = {
   changePassword: (current: string, password: string) =>
     request<void>("/api/settings/password", "POST", { current, password }),
   regenerateToken: () => request<Settings>("/api/settings/report-token", "POST"),
+  tokens: () => request<ApiToken[]>("/api/tokens"),
+  createToken: (name: string) => request<IssuedToken>("/api/tokens", "POST", { name }),
+  revokeToken: (id: string) => request<void>(`/api/tokens/${id}`, "DELETE"),
   members: () => request<Member[]>("/api/members"),
   invite: (role: Role) => request<IssuedLink>("/api/members/invites", "POST", { role }),
   resetLink: (id: string) => request<IssuedLink>(`/api/members/${id}/reset-link`, "POST"),
