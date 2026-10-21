@@ -18,9 +18,9 @@ const login = (email: string, password: string) =>
   send("/login", { method: "POST", form: { email, password } });
 
 const attemptEmails = async () =>
-  (
-    await env.DB.prepare("SELECT email FROM login_attempts ORDER BY email").all<{ email: string }>()
-  ).results.map((row) => row.email);
+  (await env.DB.prepare("SELECT key FROM login_attempts ORDER BY key").all<{ key: string }>()).results.map(
+    (row) => row.key,
+  );
 
 describe("access", () => {
   it("rejects API calls without a session", async () => {

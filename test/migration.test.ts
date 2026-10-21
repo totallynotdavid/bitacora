@@ -3,7 +3,16 @@ import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import { admin, send, setNow } from "./helpers";
 
-const TABLES = ["cards", "labels", "links", "login_attempts", "users", "settings", "d1_migrations"];
+const TABLES = [
+  "api_tokens",
+  "cards",
+  "labels",
+  "links",
+  "login_attempts",
+  "users",
+  "settings",
+  "d1_migrations",
+];
 
 async function dropEverything() {
   await env.DB.batch(TABLES.map((table) => env.DB.prepare(`DROP TABLE IF EXISTS ${table}`)));

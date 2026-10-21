@@ -1,14 +1,35 @@
 import { env, exports } from "cloudflare:workers";
 import { vi } from "vitest";
-import type { Board, Card, IssuedLink, Label, LabelColor, Member, Role, Settings } from "../src/shared/model";
+import type {
+  ApiToken,
+  Board,
+  Card,
+  IssuedLink,
+  IssuedToken,
+  Label,
+  LabelColor,
+  Member,
+  Role,
+  Settings,
+} from "../src/shared/model";
 import { claimAdminSql } from "../src/worker/db/first-admin";
 import { hashPassword } from "../src/worker/password";
 
-type Init = { method?: string; json?: unknown; cookie?: string; form?: Record<string, string> };
+type Init = {
+  method?: string;
+  json?: unknown;
+  cookie?: string;
+  bearer?: string;
+  /** The client address Cloudflare reports. */
+  address?: string;
+  form?: Record<string, string>;
+};
 
 export function send(path: string, init: Init = {}): Promise<Response> {
   const headers = new Headers();
   if (init.cookie) headers.set("Cookie", init.cookie);
+  if (init.bearer) headers.set("Authorization", `Bearer ${init.bearer}`);
+  if (init.address) headers.set("CF-Connecting-IP", init.address);
   if (init.json !== undefined) headers.set("Content-Type", "application/json");
   const body = init.form
     ? new URLSearchParams(init.form)
@@ -64,6 +85,8 @@ export function clientFor(cookie: string) {
     addLabel: (name: string, color: LabelColor = "green") =>
       call<Label>("/api/labels", "POST", { name, color }),
     settings: () => call<Settings>("/api/settings"),
+    tokens: () => call<ApiToken[]>("/api/tokens"),
+    makeToken: (name: string) => call<IssuedToken>("/api/tokens", "POST", { name }),
     members: () => call<Member[]>("/api/members"),
     invite: (role: Role = "member") => call<IssuedLink>("/api/members/invites", "POST", { role }),
     resetLink: (memberId: string) => call<IssuedLink>(`/api/members/${memberId}/reset-link`, "POST"),
