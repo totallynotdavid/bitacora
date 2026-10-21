@@ -66,6 +66,41 @@ applies the migrations to the local D1 database and serves the app at
 - The report is at `/r/<token>` and shows your name and your cards.
   `?semana=2026-W42` picks another week.
 
+### Add cards from a script
+
+Ajustes has a Tokens de acceso section. Type a name, press "Crear token" and
+copy the token. It is shown once and cannot be read again. The list shows each
+token's name, creation date and last use. "Revocar" stops a token at once.
+Disabling the member stops all their tokens until "Activar".
+
+A script sends the token as `Authorization: Bearer <token>`. Only `/api/v1`
+accepts it, and `/api/v1` accepts nothing else. Everything is JSON.
+
+```sh
+export BITACORA_URL=https://bitacora.<subdomain>.workers.dev
+export BITACORA_TOKEN=bit_...
+bun run log -- "Informe de enero" --list hecho --label cicat
+```
+
+The script posts one card and prints its list, id and title. `--list` is
+`pendiente`, `esta_semana`, `en_curso` or `hecho`. `--label`, `--notes`,
+`--requester` and `--date` are optional. Without a title and a list it prints
+the usage and exits with 2.
+
+| Request                                   | Does                                                                    |
+| ----------------------------------------- | ----------------------------------------------------------------------- |
+| `POST /api/v1/cards`                      | Creates a card at the end of its list on your board. Answers 201.       |
+| `GET /api/v1/cards?list=&semana=2026-W42` | Lists open cards and the Hecho cards of one week (this one by default). |
+
+`POST` takes `title` and `list`, and optionally `label` (the name of one of your
+labels, any case), `notes`, `requester` and `date`. `date` is a Lima date, only
+for `hecho`, never in the future, and defaults to today. An unknown field, list
+or label answers 400. `GET` narrows by `list` as well. Both answer with cards
+that carry `label` by name next to `labelId`.
+
+From the sixth wrong token from one address within 15 minutes, `/api/v1` answers
+that address 429 with `Retry-After` for 15 minutes. A valid token still works.
+
 ### Members
 
 Admins see a Miembros section in Ajustes.
@@ -89,7 +124,8 @@ Admins see a Miembros section in Ajustes.
 | `SESSION_SECRET` | Key that signs the session cookie. |
 
 Generate a signing key with `openssl rand -base64 48`. Passwords live in the
-database as PBKDF2 hashes, never in a secret.
+database as PBKDF2 hashes, never in a secret. API tokens need no secret: the
+database holds their SHA-256 hash.
 
 ## Migrate
 
@@ -173,7 +209,7 @@ You need a Cloudflare account. The free plan is enough.
 `https://bitacora.<subdomain>.workers.dev`. Wrangler prints the address after
 the deploy. The first deploy on an account asks you to register the
 `<subdomain>`. Sign in there with the email and password you chose, then invite
-the others from Ajustes.
+the others from Ajustes. That address is the `BITACORA_URL` of the script.
 
 Deploying over a database that already holds cards keeps them, and the report
 link, under the first admin. Run steps 3 to 5. If the Worker still has an

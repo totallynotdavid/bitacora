@@ -7,7 +7,7 @@ src/shared   model, schemas and date rules used by both sides
 src/worker   Hono app, D1 queries, auth
 src/web      React app: board, dialogs, drag and drop
 src/import   Trello export to cards
-scripts      claim-admin, import-trello, prepare-dev
+scripts      claim-admin, import-trello, prepare-dev, bitacora (log)
 drizzle      generated migrations
 test         tests that drive the Worker over HTTP
 e2e          Playwright tests that drive the app in Chromium
@@ -19,11 +19,14 @@ e2e          Playwright tests that drive the app in Chromium
 
 1. `/login`, `/logout`, `/invitacion/<token>` and `/restablecer/<token>`
    (`routes/auth.tsx`), public.
-2. `/api/*` (`routes/api.ts`), the JSON API. It checks the session itself.
-   `/api/members` (`routes/members.ts`) also needs the admin role.
-3. `/r/<token>` (`routes/report.tsx`), public.
-4. `/assets/*`, `/fonts/*` and `/favicon.svg`, public static files.
-5. Everything else needs the session and returns the React app, including a
+2. `/api/v1/*` (`routes/v1.ts`), the JSON API for scripts. It takes a bearer
+   token and no cookie. See API tokens.
+3. `/api/*` (`routes/api.ts`), the JSON API. It checks the session itself.
+   `/api/members` (`routes/members.ts`) also needs the admin role. `/api/tokens`
+   (`routes/tokens.ts`) manages the user's API tokens.
+4. `/r/<token>` (`routes/report.tsx`), public.
+5. `/assets/*`, `/fonts/*` and `/favicon.svg`, public static files.
+6. Everything else needs the session and returns the React app, including a
    card's own page, `/c/<id>`.
 
 Without a session, a page request redirects to `/login` and an API request gets
@@ -146,6 +149,38 @@ lock. A successful login deletes the row. Inserting the row of a new email
 deletes, in the same statement, every row whose window and lock ended more than
 15 minutes ago, so rows of emails that stopped trying do not pile up. An email
 longer than 254 characters is refused before it is counted.
+
+`login-limit.ts` counts by a key, so a bad bearer token uses the same table and
+rules under the key `bearer:<address>`, with the address from
+`CF-Connecting-IP`. See API tokens.
+
+### API tokens
+
+A user makes tokens in Ajustes (`/api/tokens`, session only). A token is `bit_`
+and 32 random bytes in base64url. The table `api_tokens` holds its SHA-256, a
+name, the creation time and the last use, never the token. The token is in the
+response that creates it and nowhere else. Revoking deletes the row. A row
+belongs to one user, and deleting the user deletes their tokens.
+
+`/api/v1` runs `requireToken` (`api-tokens.ts`) and nothing from `session.ts`,
+so the cookie is not read there and a request without a bearer gets 401. The
+other routes never read `Authorization`, so a token cannot reach them, and
+cannot make tokens. A bearer request needs no CSRF step because the browser does
+not send it by itself.
+
+`requireToken` runs one UPDATE that sets `last_used_at` on the row whose hash
+matches and whose owner is not disabled, then reads the owner as
+`requireSession` does, so a disabled owner or an unclaimed account matches
+nothing. A token that matches nothing counts one attempt under the
+`bearer:<address>` key. The sixth in a window is 429 with `Retry-After`. A token
+that matches does not touch the limit table, so a valid token still works from a
+locked address.
+
+`POST /api/v1/cards` resolves the label name to one of the user's labels
+(`routes/v1.ts`, 400 when there is none) and calls `cardsOf(...).create`, the
+same function the board uses. A Hecho card takes `date`, validated as a Done
+date, or today. `GET /api/v1/cards` reads through the same `cardsOf` functions
+as the board: open cards, and the Hecho cards of `semana`.
 
 ### Links
 
