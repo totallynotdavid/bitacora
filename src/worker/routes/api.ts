@@ -18,11 +18,13 @@ import { hashPassword, verifyPassword } from "../password";
 import { requireSession, startSession, type AppEnv } from "../session";
 import { changePassword, regenerateReportToken, renameUser, reportTokenOf } from "../users";
 import { members } from "./members";
+import { tokens } from "./tokens";
 
 export const api = new Hono<AppEnv>();
 
 api.use(requireSession);
 api.route("/members", members);
+api.route("/tokens", tokens);
 
 const today = () => limaDate(new Date());
 

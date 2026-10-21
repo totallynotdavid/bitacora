@@ -4,6 +4,7 @@ import { LabelConflict } from "./labels";
 import { api } from "./routes/api";
 import { auth } from "./routes/auth";
 import { report } from "./routes/report";
+import { v1 } from "./routes/v1";
 import { requireSession, type AppEnv } from "./session";
 
 const app = new Hono<AppEnv>();
@@ -17,6 +18,8 @@ app.onError((error, c) => {
 });
 
 app.route("/", auth);
+// Before `/api`, which would answer any path under it with the cookie check.
+app.route("/api/v1", v1);
 app.route("/api", api);
 app.route("/r", report);
 

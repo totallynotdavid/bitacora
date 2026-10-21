@@ -88,3 +88,12 @@ export type Member = {
 
 /** A single-use link the admin copies and sends. `path` is relative to the site. */
 export type IssuedLink = { path: string; expiresAt: number };
+
+/** A personal API token as Ajustes lists it. Times are unix seconds. */
+export type ApiToken = { id: string; name: string; createdAt: number; lastUsedAt: number | null };
+
+/** The one response that carries the secret. It is never stored or shown again. */
+export type IssuedToken = ApiToken & { token: string };
+
+/** A card as a script reads it: the label by name. */
+export type ApiCard = Card & { label: string | null };

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseWeek } from "./dates";
 import { LABEL_COLORS, LISTS, MIN_PASSWORD, ROLES } from "./model";
 
 const title = z.string().trim().min(1).max(200);
@@ -19,6 +20,31 @@ export const createCardSchema = z.object({
   title,
   list: z.enum(LISTS),
 });
+
+/** The card a script posts. The label is a name, and `date` is the Lima date of a Hecho card. */
+export const apiCreateCardSchema = z
+  .strictObject({
+    title,
+    list: z.enum(LISTS),
+    label: z.string().trim().min(1).max(40).optional(),
+    notes: description.optional(),
+    requester: requester.optional(),
+    date: doneDate.optional(),
+  })
+  .refine((card) => card.date === undefined || card.list === "hecho", {
+    message: "date applies only to the hecho list",
+    path: ["date"],
+  });
+
+export const apiListCardsSchema = z.object({
+  list: z.enum(LISTS).optional(),
+  semana: z
+    .string()
+    .refine((week) => parseWeek(week) !== null, "semana must look like 2026-W42")
+    .optional(),
+});
+
+export const createTokenSchema = z.object({ name: z.string().trim().min(1).max(80) });
 
 export const updateCardSchema = z.object({
   title: title.optional(),
