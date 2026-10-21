@@ -31,17 +31,23 @@ function sameGroup(a: Placement, b: Placement): boolean {
   return a.list === b.list && a.doneDate === b.doneDate;
 }
 
+/** Hecho cards carry a date, never a future one. Every other list carries none. */
+function placementIn(list: ListId, doneDate: string | null, today: string): Placement {
+  if (list !== "hecho") return { list, doneDate: null };
+  if (doneDate! > today) throw new InvalidCard("doneDate is in the future");
+  return { list, doneDate };
+}
+
 type Requested = { list?: ListId; doneDate?: string };
 
 /** Where a card lands. Entering Hecho dates the card today unless a date is given. Leaving Hecho clears the date. */
 function resolvePlacement(card: Card, requested: Requested, today: string): Placement {
   const list = requested.list ?? card.list;
-  if (list !== "hecho") return { list, doneDate: null };
-
-  const doneDate = requested.doneDate ?? (card.list === "hecho" ? card.doneDate : today);
-  if (doneDate! > today) throw new InvalidCard("doneDate is in the future");
-  return { list, doneDate };
+  return placementIn(list, requested.doneDate ?? (card.list === "hecho" ? card.doneDate : today), today);
 }
+
+/** What a create can set beyond the title and the list. */
+export type NewCard = CreateCard & Pick<UpdateCard, "description" | "labelId" | "requester" | "doneDate">;
 
 /**
  * A group as a WHERE fragment on unqualified columns, valid in any subquery over
@@ -85,6 +91,15 @@ export function cardsOf(db: Db, userId: string) {
       .where(and(eq(cards.id, id), mine))
       .get();
 
+  const assertOwnLabel = async (labelId: string): Promise<void> => {
+    const label = await db
+      .select({ id: labels.id })
+      .from(labels)
+      .where(and(eq(labels.id, labelId), eq(labels.userId, userId)))
+      .get();
+    if (!label) throw new InvalidCard("unknown label");
+  };
+
   return {
     get,
 
@@ -126,19 +141,27 @@ export function cardsOf(db: Db, userId: string) {
     },
 
     /**
-     * Creates a card at the end of its list. A repeated create with the same id
-     * returns the card the first one made. An id that another user's card has
-     * throws `CardIdTaken`.
+     * Creates a card at the end of its list. A card made in Hecho is dated
+     * today unless a date is given. A repeated create with the same id returns
+     * the card the first one made. An id that another user's card has throws
+     * `CardIdTaken`.
      */
-    async create(input: CreateCard, today: string): Promise<Card> {
-      const placement: Placement = {
-        list: input.list,
-        doneDate: input.list === "hecho" ? today : null,
-      };
+    async create(input: NewCard, today: string): Promise<Card> {
+      const placement = placementIn(input.list, input.doneDate ?? today, today);
+      if (input.labelId) await assertOwnLabel(input.labelId);
       const id = input.id ?? crypto.randomUUID();
       const created = await db
         .insert(cards)
-        .values({ id, userId, title: input.title, ...placement, position: endOfGroup(userId, placement) })
+        .values({
+          id,
+          userId,
+          title: input.title,
+          description: input.description,
+          labelId: input.labelId,
+          requester: input.requester,
+          ...placement,
+          position: endOfGroup(userId, placement),
+        })
         .onConflictDoNothing()
         .returning(cardColumns)
         .get();
@@ -157,14 +180,7 @@ export function cardsOf(db: Db, userId: string) {
       const placement = resolvePlacement(card, { list, doneDate }, today);
       const moved = !sameGroup(card, placement);
 
-      if (fields.labelId) {
-        const label = await db
-          .select({ id: labels.id })
-          .from(labels)
-          .where(and(eq(labels.id, fields.labelId), eq(labels.userId, userId)))
-          .get();
-        if (!label) throw new InvalidCard("unknown label");
-      }
+      if (fields.labelId) await assertOwnLabel(fields.labelId);
 
       if (!moved && index === undefined) {
         if (Object.keys(fields).length === 0) return card;
