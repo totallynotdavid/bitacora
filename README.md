@@ -166,55 +166,10 @@ the board. Importing the same file twice adds nothing.
 
 ## Deploy
 
-You need a Cloudflare account. The free plan is enough.
-
-1. Sign in with Wrangler. It opens a browser to authorize your account:
-
-   ```sh
-   bunx wrangler login
-   ```
-
-2. Create the database. Copy the `database_id` it prints into `wrangler.jsonc`:
-
-   ```sh
-   bunx wrangler d1 create bitacora
-   ```
-
-3. Apply the migrations and deploy:
-
-   ```sh
-   bun run db:migrate:remote
-   bun run deploy
-   ```
-
-4. Set the signing key. The command asks for the value (see Secrets):
-
-   ```sh
-   bunx wrangler secret put SESSION_SECRET
-   ```
-
-5. Claim the first admin. The migration creates the account without an email or
-   a password, so nobody can sign in until you do this. The command asks for the
-   password twice:
-
-   ```sh
-   bun run claim-admin -- --remote --email you@example.com --name "Your Name"
-   ```
-
-   It works once. When the account already has a password it prints "The first
-   admin is already claimed. Nothing changed." and exits with 1. Without
-   `--remote` it claims the account in the local database.
-
-`workers_dev` is on, so the Worker answers at
-`https://bitacora.<subdomain>.workers.dev`. Wrangler prints the address after
-the deploy. The first deploy on an account asks you to register the
-`<subdomain>`. Sign in there with the email and password you chose, then invite
-the others from Ajustes. That address is the `BITACORA_URL` of the script.
-
-Deploying over a database that already holds cards keeps them, and the report
-link, under the first admin. Run steps 3 to 5. If the Worker still has an
-`OWNER_PASSWORD_HASH` secret, delete it with
-`bunx wrangler secret delete OWNER_PASSWORD_HASH`.
+A push to `main` checks, migrates the D1 database and deploys the Worker from
+GitHub Actions. The secret, the two variables, the token's permissions, the
+rollback bookmark and the first-time setup are in
+[docs/deploy.md](docs/deploy.md).
 
 ## Develop
 

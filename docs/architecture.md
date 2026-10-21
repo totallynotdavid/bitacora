@@ -42,9 +42,9 @@ account with no email or no password cannot sign in.
 The migration creates the first admin with the fixed id
 `00000000-0000-4000-8000-000000000001`, gives it every existing card, the report
 token and the two labels Desarrollo and Cursos, and leaves its email and
-password empty. `bun run claim-admin` sets them (see the README). It runs one
-UPDATE that only applies while the password is empty, so a second run cannot
-take the account over.
+password empty. `bun run claim-admin` sets them (see [deploy.md](deploy.md)). It
+runs one UPDATE that only applies while the password is empty, so a second run
+cannot take the account over.
 
 ## Shared state
 
