@@ -4,7 +4,7 @@ You need a Cloudflare account. The free plan is enough.
 
 ## Release
 
-A push to `main` runs
+A push to `master` runs
 [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml). It runs
 `bun run check`, applies the pending D1 migrations to the remote database, then
 deploys the Worker. A failed check or migration stops the run before the next
@@ -38,7 +38,7 @@ bunx wrangler d1 time-travel restore bitacora --bookmark=<bookmark>
 
 ## First-time setup
 
-Run these steps by hand once, before the first push to `main` can deploy.
+Run these steps by hand once, before the first push to `master` can deploy.
 
 1. Sign in with Wrangler. It opens a browser to authorize your account:
 
