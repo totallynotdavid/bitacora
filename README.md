@@ -166,7 +166,7 @@ the board. Importing the same file twice adds nothing.
 
 ## Deploy
 
-A push to `main` checks, migrates the D1 database and deploys the Worker from
+A push to `master` checks, migrates the D1 database and deploys the Worker from
 GitHub Actions. The secret, the two variables, the token's permissions, the
 rollback bookmark and the first-time setup are in
 [docs/deploy.md](docs/deploy.md).
