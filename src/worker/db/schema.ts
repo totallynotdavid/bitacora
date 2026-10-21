@@ -97,12 +97,36 @@ export const links = sqliteTable(
   ],
 );
 
-/** Sign-in attempts per email in the current window. See `login-limit.ts`. */
+/**
+ * Failed attempts per key in the current window. See `login-limit.ts`. A key is
+ * an email for sign-in, or `bearer:` and an address for bad API tokens.
+ */
 export const loginAttempts = sqliteTable("login_attempts", {
-  email: text().primaryKey(),
+  key: text().primaryKey(),
   attempts: integer().notNull(),
   /** Unix seconds. */
   windowStart: integer("window_start").notNull(),
   /** Unix seconds. Zero, or in the past, when the email is not locked. */
   lockedUntil: integer("locked_until").notNull().default(0),
 });
+
+/**
+ * A member's personal API token. Only the SHA-256 of the token is stored. The
+ * token itself is shown once, when it is made.
+ */
+export const apiTokens = sqliteTable(
+  "api_tokens",
+  {
+    id: text().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    /** Unix seconds. */
+    createdAt: integer("created_at").notNull(),
+    /** Unix seconds of the last request, or null while unused. */
+    lastUsedAt: integer("last_used_at"),
+  },
+  (table) => [index("api_tokens_user").on(table.userId)],
+);

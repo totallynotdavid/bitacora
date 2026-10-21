@@ -11,18 +11,18 @@ const dialect = new SQLiteSyncDialect();
 
 /**
  * Counts one attempt in a single upsert and returns the unix second until which
- * the email is refused, or null. The sixth attempt in a window locks the email,
- * whatever password it carries. A locked row does not change. Inserting a row
+ * the key is refused, or null. The sixth attempt in a window locks the key,
+ * whatever it carries. A locked row does not change. Inserting a row
  * deletes, through a trigger, the rows whose window and lock have ended.
  */
-export async function countAttempt(db: Db, email: string): Promise<number | null> {
+export async function countAttempt(db: Db, key: string): Promise<number | null> {
   const now = nowSeconds();
   const windowOpen = sql`${loginAttempts.windowStart} > ${now - WINDOW_SECONDS}`;
   const locked = sql`${loginAttempts.lockedUntil} > ${now}`;
   const query = dialect.sqlToQuery(sql`
-    insert into login_attempts (email, attempts, window_start, locked_until)
-    values (${email}, 1, ${now}, 0)
-    on conflict (email) do update set
+    insert into login_attempts (key, attempts, window_start, locked_until)
+    values (${key}, 1, ${now}, 0)
+    on conflict (key) do update set
       attempts = case when ${locked} then attempts when ${windowOpen} then attempts + 1 else 1 end,
       window_start = case when ${locked} or ${windowOpen} then window_start else ${now} end,
       locked_until = case
@@ -38,6 +38,6 @@ export async function countAttempt(db: Db, email: string): Promise<number | null
 }
 
 /** A successful sign-in forgets the failures. */
-export async function clearAttempts(db: Db, email: string): Promise<void> {
-  await db.$client.prepare("delete from login_attempts where email = ?").bind(email).run();
+export async function clearAttempts(db: Db, key: string): Promise<void> {
+  await db.$client.prepare("delete from login_attempts where key = ?").bind(key).run();
 }
