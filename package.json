@@ -12,6 +12,7 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "claim-admin": "bun scripts/claim-admin.ts",
+    "log": "bun scripts/bitacora.ts",
     "import:trello": "bun scripts/import-trello.ts",
     "types": "wrangler types --strict-vars false",
     "format": "oxfmt",
