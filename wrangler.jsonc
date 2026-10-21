@@ -4,6 +4,7 @@
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
+  "routes": [{ "pattern": "bitacora.cicat.edu.pe", "custom_domain": true }],
   "assets": {
     "directory": "dist/client",
     "binding": "ASSETS",
