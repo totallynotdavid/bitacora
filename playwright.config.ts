@@ -20,7 +20,10 @@ export default defineConfig({
     // A fresh local D1 on every run. The built app is served, so a page load is a few
     // requests instead of one per source module.
     command: `rm -rf ${state} && bun scripts/prepare-dev.ts && vite build && vite preview --port ${port} --strictPort`,
-    env: { BITACORA_STATE: state },
+    env: {
+      BITACORA_STATE: state,
+      CLOUDFLARE_DEV_REGISTRY_PATH: ".wrangler/e2e-dev-registry",
+    },
     url: `http://localhost:${port}/login`,
     reuseExistingServer: false,
     timeout: 120_000,
