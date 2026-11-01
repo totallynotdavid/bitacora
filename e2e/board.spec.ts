@@ -149,6 +149,12 @@ test.describe("card back", () => {
       dialog(page).getByRole("checkbox", { name: "Marcar: a" }).check(),
     ]);
     await expect(progress).toHaveAttribute("aria-valuenow", "25");
+    await expect
+      .poll(
+        async () =>
+          (await bitacora.board()).cards.find((card) => card.title === "Con lista")?.checklist[0]?.done,
+      )
+      .toBe(true);
 
     await page.reload();
     await expect(dialog(page).getByRole("checkbox", { name: "Marcar: a" })).toBeChecked();
