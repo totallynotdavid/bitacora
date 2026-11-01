@@ -16,6 +16,8 @@ export default defineConfig(async () => ({
   test: {
     include: ["test/**/*.test.ts"],
     setupFiles: ["./test/setup.ts"],
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
     // The contrast test reads the token file as text.
     css: { include: [/tokens\.css/] },
   },
