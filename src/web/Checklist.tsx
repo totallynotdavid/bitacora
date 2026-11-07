@@ -1,6 +1,6 @@
 import { Eye, EyeOff, ListChecks, Plus, Trash2, X } from "lucide-react";
 import { useRef, useState } from "react";
-import type { ChecklistItem } from "../shared/model";
+import { CHECKLIST_MAX, CHECKLIST_TEXT_MAX, type ChecklistItem } from "../shared/model";
 import styles from "./Checklist.module.css";
 import { useEscape } from "./useEscape";
 
@@ -34,7 +34,7 @@ function ItemText({ text, done, onSave }: { text: string; done: boolean; onSave:
     <input
       className={styles.edit}
       autoFocus
-      maxLength={200}
+      maxLength={CHECKLIST_TEXT_MAX}
       value={draft}
       aria-label="Texto del elemento"
       onChange={(event) => setDraft(event.target.value)}
@@ -83,7 +83,7 @@ function ItemComposer({ onAdd, startOpen }: { onAdd: (text: string) => void; sta
         className={styles.field}
         autoFocus
         rows={2}
-        maxLength={200}
+        maxLength={CHECKLIST_TEXT_MAX}
         value={draft}
         aria-label="Nuevo elemento"
         placeholder="Añadir un elemento"
@@ -175,10 +175,12 @@ export function Checklist(props: {
         )}
       </ul>
 
-      <ItemComposer
-        startOpen={props.startOpen}
-        onAdd={(text) => props.onSave([...items, { text, done: false }])}
-      />
+      {items.length < CHECKLIST_MAX && (
+        <ItemComposer
+          startOpen={props.startOpen}
+          onAdd={(text) => props.onSave([...items, { text, done: false }])}
+        />
+      )}
     </section>
   );
 }

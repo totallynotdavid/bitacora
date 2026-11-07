@@ -268,6 +268,20 @@ test("the composer stays open after Enter and the cards land in order", async ({
   await expect(active.locator("[data-card-id]")).toHaveText(["Primera", "Segunda"]);
 });
 
+test("the composer stops a title at the length the server accepts", async ({ page, bitacora }) => {
+  await bitacora.open();
+
+  const active = bitacora.list("En curso");
+  await active.getByRole("button", { name: "Añade una tarjeta" }).click();
+  const input = active.getByRole("textbox", { name: "Título de la tarjeta" });
+  await input.pressSequentially("x".repeat(250));
+  await input.press("Enter");
+
+  await expect(active.locator("[data-card-id]")).toHaveCount(1);
+  await expect.poll(async () => (await bitacora.board()).cards[0]?.title).toBe("x".repeat(200));
+  await expect(page.getByRole("status").filter({ hasText: NOT_SAVED })).toHaveCount(0);
+});
+
 test("a card opened before its create is answered shows its card back", async ({ page, bitacora }) => {
   await bitacora.open();
   let release!: () => void;
@@ -613,6 +627,17 @@ test.describe("card back fields", () => {
     await text.press("Control+Enter");
     await expect(dialog(page).getByText("Texto final")).toBeVisible();
     await expect.poll(async () => (await bitacora.board()).cards[0]?.description).toBe("Texto final");
+  });
+
+  test("a full checklist offers no more items", async ({ page, bitacora }) => {
+    const checklist = Array.from({ length: 100 }, (_, i) => ({ text: `Elemento ${i + 1}`, done: false }));
+    await bitacora.seed([{ title: "Llena", list: "en_curso", checklist }]);
+    await bitacora.open();
+    await bitacora.card("Llena").click();
+
+    await expect(dialog(page).getByRole("checkbox")).toHaveCount(100);
+    await expect(dialog(page).getByRole("button", { name: "Añadir un elemento" })).toHaveCount(0);
+    await expect(dialog(page).getByRole("textbox", { name: "Nuevo elemento" })).toHaveCount(0);
   });
 
   test("the checklist composer stays open after Enter", async ({ page, bitacora }) => {

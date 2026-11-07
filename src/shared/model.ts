@@ -28,6 +28,10 @@ export function labelStyle(color: LabelColor): { background: string; color: stri
 
 export const MIN_PASSWORD = 8;
 
+export const TITLE_MAX = 200;
+export const CHECKLIST_MAX = 100;
+export const CHECKLIST_TEXT_MAX = 200;
+
 export const ROLES = ["admin", "member"] as const;
 export type Role = (typeof ROLES)[number];
 

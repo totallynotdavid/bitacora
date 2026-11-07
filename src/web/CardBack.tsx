@@ -1,7 +1,7 @@
 import { ArrowRight, Clock, ListChecks, Tag, Trash2, User, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { dayHeading } from "../shared/dates";
-import { labelStyle, LIST_TITLES, type Card } from "../shared/model";
+import { labelStyle, LIST_TITLES, TITLE_MAX, type Card } from "../shared/model";
 import type { Fields } from "./boardState";
 import { Checklist } from "./Checklist";
 import { CardPopover, type CardActions, type PopoverKind } from "./CardPopover";
@@ -39,7 +39,7 @@ function Title({ card, onSave }: { card: Card; onSave: (title: string) => void }
       ref={field}
       className={styles.title}
       rows={1}
-      maxLength={200}
+      maxLength={TITLE_MAX}
       value={text}
       aria-label="Título de la tarjeta"
       onFocus={() => setFocused(true)}

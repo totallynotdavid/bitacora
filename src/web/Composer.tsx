@@ -1,5 +1,6 @@
 import { Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { TITLE_MAX } from "../shared/model";
 import styles from "./Composer.module.css";
 import { useUi } from "./ui";
 import { useEscape } from "./useEscape";
@@ -56,6 +57,7 @@ export function Composer({ container }: { container: string }) {
         data-elevation="raised"
         autoFocus
         rows={3}
+        maxLength={TITLE_MAX}
         value={text}
         placeholder="Escribe un título para esta tarjeta…"
         aria-label="Título de la tarjeta"

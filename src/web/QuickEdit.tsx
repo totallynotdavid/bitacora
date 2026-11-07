@@ -1,6 +1,6 @@
 import { ArrowRight, Clock, CreditCard, Tag, Trash2, User } from "lucide-react";
 import { useState } from "react";
-import type { Card } from "../shared/model";
+import { TITLE_MAX, type Card } from "../shared/model";
 import { CardFace } from "./CardView";
 import { CardPopover, type CardActions, type PopoverKind } from "./CardPopover";
 import styles from "./QuickEdit.module.css";
@@ -63,6 +63,7 @@ export function QuickEdit(props: {
               ref={field}
               className={styles.field}
               rows={1}
+              maxLength={TITLE_MAX}
               autoFocus
               onFocus={(event) => event.currentTarget.select()}
               value={title}
