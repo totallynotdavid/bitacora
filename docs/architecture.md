@@ -110,7 +110,7 @@ together, so a write never breaks the CHECK constraint.
 
 A label belongs to one user and has a name and a color. The name is unique per
 user. The color is one of `green`, `yellow`, `orange`, `red`, `purple` and
-`blue`, stored by name. `LABEL_STYLES` in `src/shared/model.ts` gives each its
+`blue`, stored by name. `labelStyle` in `src/shared/model.ts` gives each its
 background and text.
 
 A card has one label or none, in `cards.label_id`. A card with no label shows no
