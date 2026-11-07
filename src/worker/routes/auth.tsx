@@ -1,5 +1,5 @@
 /** @jsxImportSource hono/jsx */
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { MIN_PASSWORD } from "../../shared/model";
 import { loginSchema, resetSchema, signUpSchema } from "../../shared/schemas";
 import { connect } from "../db/client";
@@ -18,6 +18,9 @@ const DUMMY_HASH = `pbkdf2-sha256$100000$${"A".repeat(22)}$${"A".repeat(43)}`;
 const field = (form: Record<string, unknown>, name: string) =>
   typeof form[name] === "string" ? form[name] : "";
 
+const readForm = (c: Context<AppEnv>): Promise<Record<string, unknown>> =>
+  c.req.parseBody().catch(() => ({}));
+
 const WRONG = "Correo o contraseña incorrectos.";
 
 auth.get("/login", async (c) => {
@@ -26,7 +29,7 @@ auth.get("/login", async (c) => {
 });
 
 auth.post("/login", async (c) => {
-  const form = await c.req.parseBody();
+  const form = await readForm(c);
   const parsed = loginSchema.safeParse({ email: field(form, "email"), password: field(form, "password") });
   if (!parsed.success) return c.html(<LoginPage error={WRONG} />, 401);
   const { email, password } = parsed.data;
@@ -72,7 +75,7 @@ auth.get("/invitacion/:token", async (c) => {
 
 auth.post("/invitacion/:token", async (c) => {
   const token = c.req.param("token");
-  const form = await c.req.parseBody();
+  const form = await readForm(c);
   const input = { name: field(form, "name"), email: field(form, "email"), password: field(form, "password") };
   const parsed = signUpSchema.safeParse(input);
   if (!parsed.success) {
@@ -113,7 +116,7 @@ auth.get("/restablecer/:token", async (c) => {
 
 auth.post("/restablecer/:token", async (c) => {
   const token = c.req.param("token");
-  const form = await c.req.parseBody();
+  const form = await readForm(c);
   const parsed = resetSchema.safeParse({ password: field(form, "password") });
   if (!parsed.success) {
     return c.html(

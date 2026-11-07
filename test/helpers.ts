@@ -23,6 +23,7 @@ type Init = {
   /** The client address Cloudflare reports. */
   address?: string;
   form?: Record<string, string>;
+  raw?: { body: string; type: string };
 };
 
 export function send(path: string, init: Init = {}): Promise<Response> {
@@ -31,11 +32,14 @@ export function send(path: string, init: Init = {}): Promise<Response> {
   if (init.bearer) headers.set("Authorization", `Bearer ${init.bearer}`);
   if (init.address) headers.set("CF-Connecting-IP", init.address);
   if (init.json !== undefined) headers.set("Content-Type", "application/json");
-  const body = init.form
-    ? new URLSearchParams(init.form)
-    : init.json !== undefined
-      ? JSON.stringify(init.json)
-      : undefined;
+  if (init.raw) headers.set("Content-Type", init.raw.type);
+  const body = init.raw
+    ? init.raw.body
+    : init.form
+      ? new URLSearchParams(init.form)
+      : init.json !== undefined
+        ? JSON.stringify(init.json)
+        : undefined;
   return exports.default.fetch(
     new Request(`https://bitacora.test${path}`, {
       method: init.method ?? "GET",

@@ -42,6 +42,15 @@ describe("access", () => {
     expect(html).toContain('name="password"');
   });
 
+  it("refuses a malformed multipart form like an empty one", async () => {
+    const res = await send("/login", {
+      method: "POST",
+      raw: { body: "no boundary here", type: "multipart/form-data; boundary=x" },
+    });
+    expect(res.status).toBe(401);
+    expect(res.headers.getSetCookie()).toEqual([]);
+  });
+
   it("refuses a wrong password and sets no cookie", async () => {
     await admin();
     const res = await login(ADMIN.email, "otra");

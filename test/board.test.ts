@@ -26,6 +26,17 @@ describe("cards", () => {
     expect(await me.status("/api/cards", "POST", { title: "x", list: "later" })).toBe(400);
   });
 
+  it("answers 400 to a body that is not valid JSON", async () => {
+    const me = await admin();
+    const res = await send("/api/cards", {
+      method: "POST",
+      cookie: me.cookie,
+      raw: { body: '{"title": ', type: "application/json" },
+    });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toHaveProperty("error");
+  });
+
   it("edits every field", async () => {
     const me = await admin();
     const label = await me.addLabel("Desarrollo");
@@ -183,6 +194,16 @@ describe("moving cards", () => {
   it("answers 404 for an unknown card", async () => {
     const me = await admin();
     expect(await me.status("/api/cards/nope/move", "POST", { list: "hecho", index: 0 })).toBe(404);
+  });
+});
+
+describe("unknown API paths", () => {
+  it("answer 404 with JSON, not the app page", async () => {
+    const me = await admin();
+    for (const path of ["/api/nope", "/api/cards/x/nope"]) {
+      const res = await send(path, { cookie: me.cookie });
+      expect([path, res.status, res.headers.get("content-type")]).toEqual([path, 404, "application/json"]);
+    }
   });
 });
 
