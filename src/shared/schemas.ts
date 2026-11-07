@@ -1,8 +1,16 @@
 import { z } from "zod";
-import { parseWeek } from "./dates";
-import { LABEL_COLORS, LISTS, MIN_PASSWORD, ROLES } from "./model";
+import { MIN_DATE, parseWeek } from "./dates";
+import {
+  CHECKLIST_MAX,
+  CHECKLIST_TEXT_MAX,
+  LABEL_COLORS,
+  LISTS,
+  MIN_PASSWORD,
+  ROLES,
+  TITLE_MAX,
+} from "./model";
 
-const title = z.string().trim().min(1).max(200);
+const title = z.string().trim().min(1).max(TITLE_MAX);
 const description = z.string().max(10_000);
 const requester = z
   .string()
@@ -10,8 +18,10 @@ const requester = z
   .max(80)
   .nullable()
   .transform((value) => value || null);
-const checklist = z.array(z.object({ text: z.string().trim().min(1).max(200), done: z.boolean() })).max(100);
-const doneDate = z.iso.date();
+const checklist = z
+  .array(z.object({ text: z.string().trim().min(1).max(CHECKLIST_TEXT_MAX), done: z.boolean() }))
+  .max(CHECKLIST_MAX);
+const doneDate = z.iso.date().refine((date) => date >= MIN_DATE, `date must be ${MIN_DATE} or later`);
 const rowId = z.string().min(1).max(64);
 
 export const createCardSchema = z.object({

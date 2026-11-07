@@ -58,6 +58,29 @@ describe("Lima days", () => {
     expect(w40.olderWeek).toBe("2026-W36");
   });
 
+  it("walks back to a card finished in the first century", async () => {
+    setNow("2026-10-16T17:00:00Z");
+    const me = await admin();
+    const card = await me.add("antiguo", "hecho");
+    await me.edit(card.id, { doneDate: "0050-06-15" });
+    const board = await me.board();
+    expect(board.olderWeek).toBe("0050-W24");
+    const old = await me.call<DoneWeek>(`/api/done?week=${board.olderWeek}`);
+    expect(old.cards.map((c) => [c.title, c.doneDate])).toEqual([["antiguo", "0050-06-15"]]);
+    expect(old.olderWeek).toBeNull();
+  });
+
+  it("refuses a done date in year zero, which no four-digit week id can name", async () => {
+    setNow("2026-10-16T17:00:00Z");
+    const me = await admin();
+    const card = await me.add("antiguo", "hecho");
+    for (const doneDate of ["0000-01-01", "0000-06-15", "0000-12-31"]) {
+      expect(await me.status(`/api/cards/${card.id}`, "PATCH", { doneDate }), doneDate).toBe(400);
+    }
+    expect(await me.status(`/api/cards/${card.id}`, "PATCH", { doneDate: "0001-01-01" })).toBe(200);
+    expect(await me.status("/api/done?week=0000-W01")).toBe(400);
+  });
+
   it("rejects a malformed week", async () => {
     const me = await admin();
     for (const week of ["2026-42", "2026-W54", "2025-W53", ""]) {

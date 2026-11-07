@@ -31,19 +31,28 @@ function mondayOffset(utc: Date): number {
   return (utc.getUTCDay() + 6) % 7;
 }
 
+/** The first date a week id can name. Year 0 starts inside the last ISO week of year -1. */
+export const MIN_DATE = "0001-01-01";
+
 /** ISO 8601 week id such as `2026-W42`. Weeks run Monday to Sunday. */
 export function weekOf(date: string): string {
+  if (date < MIN_DATE) throw new RangeError(`${date} is before ${MIN_DATE}`);
   const utc = toUtc(date);
   const thursday = new Date(utc.getTime() + (3 - mondayOffset(utc)) * DAY_MS);
   const year = thursday.getUTCFullYear();
-  const jan1 = Date.UTC(year, 0, 1);
-  const week = Math.floor((thursday.getTime() - jan1) / (7 * DAY_MS)) + 1;
-  return `${year}-W${String(week).padStart(2, "0")}`;
+  const week = Math.floor((thursday.getTime() - januaryDay(year, 1).getTime()) / (7 * DAY_MS)) + 1;
+  return `${String(year).padStart(4, "0")}-W${String(week).padStart(2, "0")}`;
+}
+
+function januaryDay(year: number, day: number): Date {
+  const date = new Date(0);
+  date.setUTCFullYear(year, 0, day);
+  return date;
 }
 
 export function weekStart(week: string): string {
   const [year, number] = week.split("-W").map(Number) as [number, number];
-  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4 = januaryDay(year, 4);
   const monday = jan4.getTime() - mondayOffset(jan4) * DAY_MS;
   return fromUtc(new Date(monday + (number - 1) * 7 * DAY_MS));
 }
@@ -55,7 +64,7 @@ export function weekDays(week: string): string[] {
 
 /** Returns the week id when it names a real ISO week, otherwise null. */
 export function parseWeek(value: string | undefined): string | null {
-  if (!value || !/^\d{4}-W\d{2}$/.test(value)) return null;
+  if (!value || !/^\d{4}-W\d{2}$/.test(value) || value < "0001-W01") return null;
   return weekOf(weekStart(value)) === value ? value : null;
 }
 

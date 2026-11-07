@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { MIN_DATE } from "../shared/dates";
 import { LIST_TITLES, LISTS, type Card, type ListId } from "../shared/model";
 import type { Container } from "./groups";
 import styles from "./Pickers.module.css";
@@ -99,7 +100,7 @@ export function MovePicker(props: { card: Card; today: string; onMove: (to: Cont
 export function DatePicker(props: { value: string | null; today: string; onSave: (date: string) => void }) {
   const [date, setDate] = useState(props.value ?? props.today);
   const future = date > props.today;
-  const valid = date !== "" && !future;
+  const valid = date >= MIN_DATE && !future;
 
   return (
     <form
@@ -116,6 +117,7 @@ export function DatePicker(props: { value: string | null; today: string; onSave:
         className={styles.input}
         type="date"
         autoFocus
+        min={MIN_DATE}
         max={props.today}
         value={date}
         onChange={(event) => setDate(event.target.value)}
