@@ -26,7 +26,9 @@ v1.post("/cards", zValidator("json", apiCreateCardSchema), async (c) => {
   const userId = c.get("user").id;
   const { label: name, notes, date, ...input } = c.req.valid("json");
   const labels = await labelsOf(db, userId).list();
-  const label = name && labels.find((l) => l.name.toLowerCase() === name.toLowerCase());
+  const label =
+    name &&
+    (labels.find((l) => l.name === name) ?? labels.find((l) => l.name.toLowerCase() === name.toLowerCase()));
   if (name && !label) throw new InvalidCard(`unknown label "${name}"`);
   const card = await cardsOf(db, userId).create(
     { ...input, description: notes, labelId: label ? label.id : undefined, doneDate: date },

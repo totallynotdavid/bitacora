@@ -87,6 +87,16 @@ describe("POST /api/v1/cards", () => {
     ]);
   });
 
+  it("picks the label with the exact name when others differ only in case", async () => {
+    const { me, token } = await ana();
+    const upper = await me.addLabel("Dev", "blue");
+    const lower = await me.addLabel("dev", "red");
+    const placed = async (label: string) =>
+      ((await (await post(token, { title: label, list: "pendiente", label })).json()) as ApiCard).labelId;
+    expect(await placed("dev")).toBe(lower.id);
+    expect(await placed("Dev")).toBe(upper.id);
+  });
+
   it("dates a Hecho card today in Lima, or on the date given", async () => {
     const { token } = await ana();
     // 2026-10-17T03:00Z is still the 16th in Lima.
